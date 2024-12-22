@@ -1,4 +1,6 @@
 ﻿using CRMBackend.Entities;
+using CRMBackend.Requests;
+using Microsoft.AspNetCore.Mvc;
 namespace CRMBackend.Services;
 
 public class PlayerServices
@@ -12,7 +14,7 @@ public class PlayerServices
     {
         return _context.Players.ToList();
     }
-    public Player? GetPlayerById(string username)
+    public Player? GetPlayerByUsername(string username)
     {
         return _context.Players.FirstOrDefault(x => x.Username == username);
     }
@@ -31,4 +33,5 @@ public class PlayerServices
         _context.SaveChanges();
         return true;
     }
+
 }

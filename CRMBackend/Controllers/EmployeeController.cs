@@ -14,15 +14,18 @@ public class EmployeeController : ControllerBase
 {
     private readonly ILogger<EmployeeController> _logger;
     private readonly EmployeeServices _employeeServices;
+    private readonly FeedbackServices _feedbackServices;
     private readonly AppDbContext _context;
 
     public EmployeeController(ILogger<EmployeeController> logger, 
         AppDbContext context,
-        EmployeeServices employeeServices)
+        EmployeeServices employeeServices,
+        FeedbackServices feedbackServices)
     {
         _logger = logger;
         _context = context;
         _employeeServices = employeeServices;
+        _feedbackServices = feedbackServices;
     }
 
     [HttpGet("GetEmployees")]
@@ -41,7 +44,20 @@ public class EmployeeController : ControllerBase
     }
 
 
-
+    [HttpGet("GetFeedbacks")]
+    public async Task<IActionResult> GetFeedbacks()
+    {
+        try
+        {
+            var feedbacks = await Task.Run(() => _feedbackServices.GetFeedbacks());
+            return Ok(feedbacks);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching feedbacks: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
 
 
 

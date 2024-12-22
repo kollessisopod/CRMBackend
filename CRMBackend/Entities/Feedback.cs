@@ -9,8 +9,11 @@ public class Feedback
     [Column("feedback_id")]
     public int Id { get; set; }
 
-    [Column("player_username")]
-    public int PlayerUsername { get; set; }
+    [Column("sender_id")]
+    public int PlayerId { get; set; }
+
+    [Column("sender_name")]
+    public string PlayerUsername { get; set; }
 
     [Column("feedback_type")]
     public string FeedbackType { get; set; }

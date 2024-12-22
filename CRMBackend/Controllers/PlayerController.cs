@@ -2,6 +2,7 @@
 using CRMBackend.Requests;
 using CRMBackend.Services;
 using Microsoft.EntityFrameworkCore;
+using CRMBackend.Entities;
 
 namespace CRMBackend.Controllers;
 
@@ -11,15 +12,18 @@ public class PlayerController : ControllerBase
 {
     private readonly ILogger<PlayerController> _logger;
     private readonly PlayerServices _playerServices;
+    private readonly FeedbackServices _feedbackServices;
     private readonly AppDbContext _context;
 
     public PlayerController(ILogger<PlayerController> logger,
         AppDbContext context,
-        PlayerServices playerServices)
+        PlayerServices playerServices,
+        FeedbackServices feedbackServices)
     {
         _logger = logger;
         _context = context;
         _playerServices = playerServices;
+        _feedbackServices = feedbackServices;
     }
 
     [HttpGet("GetPlayers")]
@@ -37,20 +41,35 @@ public class PlayerController : ControllerBase
         }
     }
 
-    [HttpPost("InsertFeedback")]
-    public async Task<IActionResult> InsertFeedback([FromBody] InsertFeedbackRequest request)
+
+    [HttpPost("SubmitFeedback")]
+    public async Task<IActionResult> SubmitFeedback([FromBody] SubmitFeedbackRequest request)
     {
         try
         {
-            var player = _playerServices.GetPlayerById(request.Username);
+            var player = _playerServices.GetPlayerByUsername(request.Username);
             if (player == null)
             {
                 return NotFound("Player not found");
             }
-            player.FeedbackContent = request.FeedbackContent;
-            _context.Players.Update(player);
-            await _context.SaveChangesAsync();
-            return Ok("Feedback inserted successfully");
+
+            Feedback feedback = new()
+            {
+                Id = 1,
+                PlayerId = player.Id,
+                PlayerUsername = request.Username,
+                FeedbackContent = request.FeedbackContent,
+                FeedbackType = request.FeedbackType
+            };
+
+            if (_feedbackServices.CreateFeedback(feedback) != null)
+            {
+                return Ok("Feedback inserted successfully");
+            } 
+            else
+            {
+                return StatusCode(500, "Internal server error");
+            }
         }
         catch (Exception ex)
         {

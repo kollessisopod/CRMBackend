@@ -1,9 +1,11 @@
 ﻿using CRMBackend.Entities;
+using CRMBackend.Requests;
+
 namespace CRMBackend.Services;
 
 public class FeedbackServices
 {
-    /*
+    
     private readonly AppDbContext _context;
     public FeedbackServices(AppDbContext context)
     {
@@ -19,10 +21,18 @@ public class FeedbackServices
     }
     public Feedback CreateFeedback(Feedback feedback)
     {
+        try
+        {
         _context.Feedbacks.Add(feedback);
         _context.SaveChanges();
+        } catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return null;
+        }
         return feedback;
     }
+
     public void DeleteFeedback(int id)
     {
         var feedback = _context.Feedbacks.FirstOrDefault(f => f.Id == id);
@@ -32,5 +42,4 @@ public class FeedbackServices
             _context.SaveChanges();
         }
     }
-    */
 }

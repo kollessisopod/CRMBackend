@@ -19,6 +19,7 @@ builder.Services.AddScoped<EmployeeServices>();
 builder.Services.AddScoped<PlayerServices>();
 builder.Services.AddScoped<GameServices>();
 builder.Services.AddScoped<CampaignServices>();
+builder.Services.AddScoped<FeedbackServices>();
 
 var app = builder.Build();
 
