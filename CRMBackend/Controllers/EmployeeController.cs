@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Data.SqlClient;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace CRMBackend.Controllers;
 
@@ -21,7 +24,25 @@ public class EmployeeController : ControllerBase
     {
         try
         {
-            var employees = await _context.Employees.ToListAsync();
+            var employees = await _context.Players.ToListAsync();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching employees: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("ProcedureTemplate")]
+    public async Task<IActionResult> ProcedureTemplate()
+    {
+
+        try
+        {
+            var employees = _context.Employees
+                .FromSqlRaw("EXEC GetAllEmployees")
+                .ToListAsync();
             return Ok();
         }
         catch (Exception ex)
@@ -31,3 +52,6 @@ public class EmployeeController : ControllerBase
         }
     }
 }
+
+
+
