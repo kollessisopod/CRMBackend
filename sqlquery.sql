@@ -10,7 +10,7 @@ CREATE TABLE employee(
 	employee_id int not null primary key,
 	e_name varchar(20) not null,
 	e_password varchar(20) not null,
-	e_email varchar(20),
+	e_email varchar(40),
 	e_type boolean
 );
 
@@ -55,6 +55,8 @@ CREATE TABLE campaign(
 );
 
 INSERT INTO player VALUES (21011050, 'Ali Eren Arık', '12346789', 'eren.arik@std.yildiz.edu.tr', '5352528503', '2024-12-22');
+
+INSERT INTO employee VALUES (21011104, 'Aziz Çifçibaşı', '12346789', 'azizcifcibasi7@gmail.com', '1'); 
 
 
 CREATE OR REPLACE FUNCTION get_all_players()
