@@ -3,18 +3,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CRMBackend.Entities;
 
-[Table("Employees")]
+[Table("employee")]
 public class Employee
 {
     [Key]
-    [Column("id")]
-    public Guid Id { get; set; }
-    [Column("username")]
+    [Column("employeeid")]
+    public int Id { get; set; }
+    [Column("employee_name")]
     public string Username { get; set; }
-    [Column("password")]
+    [Column("e_password")]
     public string Password { get; set; }
-    [Column("email")]
+    [Column("e_email")]
     public string Email { get; set; }
-    [Column("usertype")]
+    [Column("employee_type")]
     public string UserType { get; set; }
 }
