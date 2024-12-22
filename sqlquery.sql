@@ -4,7 +4,9 @@ DROP TABLE IF EXISTS game CASCADE;
 DROP TABLE IF EXISTS employee CASCADE;
 DROP TABLE IF EXISTS feedback CASCADE;
 DROP TABLE IF EXISTS campaign CASCADE;
+DROP TABLE IF EXISTS notification CASCADE;
 DROP FUNCTION get_all_players();
+DROP FUNCTION get_player_avg_score_by_genre(p_player_id INT);
 
 CREATE TABLE employee(
 	employee_id int not null primary key,
@@ -42,16 +44,29 @@ CREATE TABLE player_game(
 );
 
 CREATE TABLE feedback(
-	feedback_ID int not null primary key,
+	feedback_id int not null primary key,
+	sender_id int not null,
 	feedback_type varchar(20) not null,
-	feedback_info varchar(20) not null
+	feedback_info varchar(20) not null,
+	
+	CONSTRAINT fk_feedback FOREIGN KEY (sender_id)
+	REFERENCES player(player_id)
 );
 
 CREATE TABLE campaign(
-	campaign_ID int not null primary key,
+	campaign_id int not null primary key,
 	campaign_info varchar(50) not null,
 	hasReward boolean not null,
 	reward_info varchar(20)
+);
+
+CREATE TABLE notification(
+	reciever_id int not null,
+	not_info varchar(50) not null,
+	isRead boolean,
+	
+	CONSTRAINT fk_not FOREIGN KEY (reciever_id)
+	REFERENCES player(player_id)	
 );
 
 INSERT INTO player VALUES (21011050, 'Ali Eren Arık', '12346789', 'eren.arik@std.yildiz.edu.tr', '5352528503', '2024-12-22');
@@ -74,3 +89,23 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION get_player_avg_score_by_genre(p_player_id INT)
+RETURNS TABLE (
+    game_genre VARCHAR(20),
+    avg_score NUMERIC
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        g.game_genre,
+        AVG(pg.score) AS avg_score
+    FROM 
+        player_game pg
+    JOIN 
+        game g ON pg.g_ID = g.game_id
+    WHERE 
+        pg.p_ID = p_player_id
+    GROUP BY 
+        g.game_genre;
+END;
+$$ LANGUAGE plpgsql;
