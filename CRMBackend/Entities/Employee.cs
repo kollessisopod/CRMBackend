@@ -16,5 +16,5 @@ public class Employee
     [Column("e_email")]
     public string Email { get; set; }
     [Column("e_type")]
-    public string UserType { get; set; }
+    public bool UserType { get; set; }
 }

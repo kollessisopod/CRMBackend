@@ -9,9 +9,13 @@ public class Feedback
     [Column("feedback_id")]
     public int Id { get; set; }
 
-    public string Name { get; set; }
-    public string Email { get; set; }
-    public string Message { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    [Column("player_username")]
+    public int PlayerUsername { get; set; }
+
+    [Column("feedback_type")]
+    public string FeedbackType { get; set; }
+
+    [Column("feedback_info")]
+    public string FeedbackContent { get; set; }
+
 }
