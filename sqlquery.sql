@@ -7,6 +7,14 @@ DROP TABLE IF EXISTS campaign CASCADE;
 DROP TABLE IF EXISTS notification CASCADE;
 DROP FUNCTION IF EXISTS get_all_players();
 DROP FUNCTION IF EXISTS get_player_avg_score_by_genre(p_player_id INT);
+DROP TRIGGER IF EXISTS trg_update_feedback_id ON feedback;
+DROP FUNCTION IF EXISTS update_feedback_id();
+DROP SEQUENCE IF EXISTS fseq;
+
+CREATE SEQUENCE f_seq
+MINVALUE 1
+MAXVALUE 100
+INCREMENT BY 1
 
 CREATE TABLE employee(
 	employee_id int not null primary key,
@@ -110,3 +118,23 @@ BEGIN
         g.game_genre;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_feedback_id()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.feedback_id = 0 THEN
+        NEW.feedback_id := NEXTVAL('f_seq');
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_update_feedback_id
+BEFORE INSERT ON feedback
+FOR EACH ROW
+EXECUTE FUNCTION update_feedback_id();
+
+INSERT INTO feedback (feedback_id, sender_id, sender_name, feedback_type, feedback_info)
+VALUES (0, 21011050, 'Ali Eren Arık', 'Suggestion', 'Great Game');
+
+SELECT * FROM feedback
