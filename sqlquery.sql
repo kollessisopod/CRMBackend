@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS game CASCADE;
 DROP TABLE IF EXISTS employee CASCADE;
 DROP TABLE IF EXISTS feedback CASCADE;
 DROP TABLE IF EXISTS campaign CASCADE;
+DROP FUNCTION get_all_players();
 
 CREATE TABLE employee(
 	employee_id int not null primary key,
@@ -61,7 +62,7 @@ RETURNS TABLE (
     player_id INT,
     p_name VARCHAR(20),
     p_password VARCHAR(20),
-    p_email VARCHAR(20),
+    p_email VARCHAR(40),
     p_pnumber CHAR(10),
     last_online DATE
 ) AS $$
