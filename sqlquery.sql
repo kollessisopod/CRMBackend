@@ -5,8 +5,8 @@ DROP TABLE IF EXISTS employee CASCADE;
 DROP TABLE IF EXISTS feedback CASCADE;
 DROP TABLE IF EXISTS campaign CASCADE;
 DROP TABLE IF EXISTS notification CASCADE;
-DROP FUNCTION get_all_players();
-DROP FUNCTION get_player_avg_score_by_genre(p_player_id INT);
+DROP FUNCTION IF EXISTS get_all_players();
+DROP FUNCTION IF EXISTS get_player_avg_score_by_genre(p_player_id INT);
 
 CREATE TABLE employee(
 	employee_id int not null primary key,
