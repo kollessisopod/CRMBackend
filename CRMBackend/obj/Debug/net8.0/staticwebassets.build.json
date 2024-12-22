@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "l2e/pBUTSKzUlNUo/dfAf9aivXsxPVvogzZIi8ufN70=",
+  "Source": "CRMBackend",
+  "BasePath": "_content/CRMBackend",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
