@@ -7,14 +7,14 @@ namespace CRMBackend.Entities;
 public class Employee
 {
     [Key]
-    [Column("employeeid")]
+    [Column("employee_id")]
     public int Id { get; set; }
-    [Column("employee_name")]
+    [Column("e_name")]
     public string Username { get; set; }
     [Column("e_password")]
     public string Password { get; set; }
     [Column("e_email")]
     public string Email { get; set; }
-    [Column("employee_type")]
+    [Column("e_type")]
     public string UserType { get; set; }
 }

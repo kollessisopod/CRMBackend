@@ -9,4 +9,13 @@ public class AppDbContext : DbContext
 
     public DbSet<Employee> Employees { get; set; }
     public DbSet<Player> Players { get; set; }
+    public DbSet<Game> Games { get; set; }
+    public DbSet<Campaign> Campaigns { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Notification>().HasNoKey();
+    }
 }

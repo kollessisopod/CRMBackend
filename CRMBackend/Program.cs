@@ -1,4 +1,5 @@
 using CRMBackend;
+using CRMBackend.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
 //Postgres config
 
+builder.Services.AddScoped<EmployeeServices>();
+builder.Services.AddScoped<PlayerServices>();
+builder.Services.AddScoped<GameServices>();
+builder.Services.AddScoped<CampaignServices>();
 
 var app = builder.Build();
 

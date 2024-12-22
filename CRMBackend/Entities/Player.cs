@@ -7,15 +7,15 @@ namespace CRMBackend.Entities;
 public class Player
 {
     [Key]
-    [Column("playerid")]
+    [Column("player_id")]
     public int Id { get; set; }
-    [Column("player_name")]
+    [Column("p_name")]
     public string Username { get; set; }
     [Column("p_password")]
     public string Password { get; set; }
     [Column("p_email")]
     public string Email { get; set; }
-    [Column("phone_number")]
+    [Column("p_pnumber")]
     public string PhoneNumber { get; set; }
     [Column("last_online")]
     public DateTime LastOnline { get; set; }
