@@ -45,12 +45,13 @@ CREATE TABLE player_game(
 
 CREATE TABLE feedback(
 	feedback_id int not null primary key,
+	sender_id int not null,
 	sender_name varchar(20) not null,
 	feedback_type varchar(20) not null,
 	feedback_info varchar(20) not null,
 	
-	CONSTRAINT fk_feedback FOREIGN KEY (sender_name)
-	REFERENCES player(p_name)
+	CONSTRAINT fk_feedback FOREIGN KEY (sender_id)
+	REFERENCES player(player_id)
 );
 
 CREATE TABLE campaign(
