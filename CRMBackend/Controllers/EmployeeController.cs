@@ -5,12 +5,12 @@ namespace CRMBackend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class PostgresController : ControllerBase
+public class EmployeeController : ControllerBase
 {
-    private readonly ILogger<PostgresController> _logger;
+    private readonly ILogger<EmployeeController> _logger;
     private readonly AppDbContext _context;
 
-    public PostgresController(ILogger<PostgresController> logger, AppDbContext context)
+    public EmployeeController(ILogger<EmployeeController> logger, AppDbContext context)
     {
         _logger = logger;
         _context = context;
@@ -26,7 +26,7 @@ public class PostgresController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error fetching products: {ex.Message}");
+            _logger.LogError($"Error fetching employees: {ex.Message}");
             return StatusCode(500, "Internal server error");
         }
     }
