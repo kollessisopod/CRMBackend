@@ -13,9 +13,13 @@ public class AppDbContext : DbContext
     public DbSet<Campaign> Campaigns { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Feedback> Feedbacks { get; set; }
-
+    public DbSet<PlayerGame> PlayerGames { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Notification>().HasNoKey();
+        modelBuilder.Entity<PlayerGame>()
+            .HasKey(pg => new { pg.PlayerId, pg.GameId });
+
+        base.OnModelCreating(modelBuilder);
     }
 }

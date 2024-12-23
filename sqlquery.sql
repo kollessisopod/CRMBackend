@@ -136,5 +136,3 @@ EXECUTE FUNCTION update_feedback_id();
 
 INSERT INTO feedback (feedback_id, sender_id, sender_name, feedback_type, feedback_info)
 VALUES (1, 21011050, 'Ali Eren Arık', 'Suggestion', 'Great Game');
-
-SELECT * FROM feedback

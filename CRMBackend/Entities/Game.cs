@@ -7,7 +7,7 @@ namespace CRMBackend.Entities;
 public class Game
 {
     [Key]
-    [Column("gameid")]
+    [Column("game_id")]
     public int Id { get; set; }
     [Column("game_name")]
     public string Name { get; set; }
