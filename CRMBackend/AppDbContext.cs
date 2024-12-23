@@ -16,7 +16,6 @@ public class AppDbContext : DbContext
     public DbSet<PlayerGame> PlayerGames { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Notification>().HasNoKey();
         modelBuilder.Entity<PlayerGame>()
             .HasKey(pg => new { pg.PlayerId, pg.GameId });
 

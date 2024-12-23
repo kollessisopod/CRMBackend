@@ -1,6 +1,10 @@
 using CRMBackend;
+using CRMBackend.Auth;
 using CRMBackend.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +25,24 @@ builder.Services.AddScoped<GameServices>();
 builder.Services.AddScoped<CampaignServices>();
 builder.Services.AddScoped<FeedbackServices>();
 builder.Services.AddScoped<PlayerGameServices>();
+builder.Services.AddScoped<NotificationServices>();
+builder.Services.AddSingleton(new TokenHelper("MySuperSecretKeyForSchoolProject1234"));
+
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MySuperSecretKeyForSchoolProject1234"))
+    };
+});
 
 var app = builder.Build();
 
@@ -34,6 +56,8 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

@@ -70,9 +70,10 @@ CREATE TABLE campaign(
 );
 
 CREATE TABLE notification(
+	not_id int not null primary key,
 	reciever_id int not null,
 	not_info varchar(50) not null,
-	isRead boolean,
+	is_read boolean,
 	
 	CONSTRAINT fk_not FOREIGN KEY (reciever_id)
 	REFERENCES player(player_id)	
