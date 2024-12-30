@@ -12,7 +12,7 @@ namespace CRMBackend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize]
+//[Authorize]
 public class PlayerController : ControllerBase
 {
     private readonly ILogger<PlayerController> _logger;
@@ -101,8 +101,8 @@ public class PlayerController : ControllerBase
         }
     }
 
-    [HttpGet("ListGames")]
-    public async Task<IActionResult> ListGames()
+    [HttpGet("GetGames")]
+    public async Task<IActionResult> GetGames()
     {
         try
         {
