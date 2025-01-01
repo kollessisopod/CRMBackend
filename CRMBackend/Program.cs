@@ -26,6 +26,16 @@ builder.Services.AddScoped<FeedbackServices>();
 builder.Services.AddScoped<PlayerGameServices>();
 builder.Services.AddScoped<NotificationServices>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,6 +46,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowAllOrigins");
 
 app.UseHttpsRedirection();
 
