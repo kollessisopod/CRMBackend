@@ -12,6 +12,7 @@ namespace CRMBackend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+
 public class PlayerController : ControllerBase
 {
     private readonly ILogger<PlayerController> _logger;
@@ -43,8 +44,6 @@ public class PlayerController : ControllerBase
         _gameServices = gameServices;
         _campaignServices = campaignServices;
     }
-
-
 
 
     [HttpPost("PlayerLogin")]

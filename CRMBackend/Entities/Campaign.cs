@@ -13,5 +13,5 @@ public class Campaign
     [Column("hasReward")]
     public bool HasReward { get; set; }
     [Column("reward_info")]
-    public string RewardInfo { get; set; }
+    public string? RewardInfo { get; set; }
 }

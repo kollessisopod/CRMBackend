@@ -18,6 +18,7 @@ public class CampaignServices
     }
     public Campaign CreateCampaign(Campaign campaign)
     {
+        campaign.Id = 1;
         _context.Campaigns.Add(campaign);
         _context.SaveChanges();
         return campaign;
