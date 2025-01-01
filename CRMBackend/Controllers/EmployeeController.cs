@@ -4,6 +4,8 @@ using CRMBackend.Entities;
 using CRMBackend.Services;
 using System.Data;
 using System.Data.SqlClient;
+using System.Text;
+using System.Runtime.CompilerServices;
 
 namespace CRMBackend.Controllers;
 
@@ -17,6 +19,7 @@ public class EmployeeController : ControllerBase
     private readonly FeedbackServices _feedbackServices;
     private readonly NotificationServices _notificationServices;
     private readonly GameServices _gameServices;
+    private readonly CampaignServices _campaignServices;
     private readonly AppDbContext _context;
 
     public EmployeeController(ILogger<EmployeeController> logger,
@@ -25,7 +28,8 @@ public class EmployeeController : ControllerBase
         FeedbackServices feedbackServices,
         PlayerServices playerServices,
         NotificationServices notificationServices,
-        GameServices gameServices)
+        GameServices gameServices,
+        CampaignServices campaignServices)
     {
         _logger = logger;
         _context = context;
@@ -34,6 +38,7 @@ public class EmployeeController : ControllerBase
         _playerServices = playerServices;
         _notificationServices = notificationServices;
         _gameServices = gameServices;
+        _campaignServices = campaignServices;
     }
 
 
@@ -102,6 +107,21 @@ public class EmployeeController : ControllerBase
         }
     }
 
+    [HttpGet("GetCampaigns")]
+    public async Task<IActionResult> GetCampaigns()
+    {
+        try
+        {
+            var campaigns = await Task.Run(() => _campaignServices.GetCampaigns());
+            return Ok(campaigns);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching campaigns: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
     [HttpPost("CreateGame")]
     public async Task<IActionResult> CreateGame([FromForm] string name, [FromForm] string genre)
     {
@@ -151,8 +171,79 @@ public class EmployeeController : ControllerBase
         }
     }
 
-    
+    [HttpPost("CreateCampaign")]
+    public async Task<IActionResult> CreateCampaign([FromForm] string campaignInfo, [FromForm] bool hasReward, [FromForm] string rewardInfo)
+    {
+        try
+        {
+            var campaign = new Campaign
+            {
+                HasReward = hasReward,
+                Info = campaignInfo,
+                RewardInfo = rewardInfo
+            };
+            await Task.Run(() => _campaignServices.CreateCampaign(campaign));
+            return Ok("Campaign created successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error creating campaign: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
 
+    [HttpPost("DeleteCampaign")]
+    public async Task<IActionResult> DeleteCampaign([FromForm] int campaignId)
+    {
+        try
+        {
+            var campaign = await Task.Run(() => _campaignServices.GetCampaignById(campaignId));
+            if (campaign == null)
+            {
+                return NotFound("Campaign not found");
+            }
+            await Task.Run(() => _campaignServices.DeleteCampaign(campaignId));
+            return Ok("Campaign deleted successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error deleting campaign: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("AnnounceCampaign")]
+    public async Task<IActionResult> AnnounceCampaign([FromForm] int campaignId)
+    {
+        try
+        {
+            var campaign = await Task.Run(() => _campaignServices.GetCampaignById(campaignId));
+            if (campaign == null)
+            {
+                return NotFound("Campaign not found");
+            }
+
+            StringBuilder campaignStringBuilder = new StringBuilder()
+                .Append("New Event: ")
+                .Append(campaign.Info);
+
+            if (campaign.HasReward)
+            {
+                campaignStringBuilder.Append(" with reward: ")
+                    .Append(campaign.RewardInfo);
+            }
+
+            String campaignString = campaignStringBuilder.ToString();
+            await SendNotification(campaignString);
+
+            return Ok("Campaign announced successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error announcing campaign: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
 
 
 }
