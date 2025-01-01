@@ -5,8 +5,13 @@ DROP TABLE IF EXISTS employee CASCADE;
 DROP TABLE IF EXISTS feedback CASCADE;
 DROP TABLE IF EXISTS campaign CASCADE;
 DROP TABLE IF EXISTS notification CASCADE;
+
 DROP FUNCTION IF EXISTS get_all_players();
 DROP FUNCTION IF EXISTS get_player_avg_score_by_genre(p_player_id INT);
+DROP FUNCTION IF EXISTS get_top_10_games_by_avg_score();
+DROP FUNCTION IF EXISTS get_feedback_type_percentage();
+DROP FUNCTION IF EXISTS get_feedback_type_percentage_last_month();
+
 -- Fonksiyonlar için DROP IF EXISTS
 DROP FUNCTION IF EXISTS auto_increment_employee_id() CASCADE;
 DROP FUNCTION IF EXISTS auto_increment_player_id() CASCADE;
@@ -81,6 +86,7 @@ CREATE TABLE feedback(
 	sender_name varchar(20) not null,
 	feedback_type varchar(20) not null,
 	feedback_info varchar(255) not null,
+	feedback_date date not null,
 	
 	CONSTRAINT fk_feedback FOREIGN KEY (sender_id)
 	REFERENCES player(player_id)
@@ -143,6 +149,70 @@ BEGIN
         g.game_genre;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_top_10_games_by_avg_score()
+RETURNS TABLE (
+    game_name VARCHAR(20),
+    avg_score NUMERIC
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        g.game_name,
+        AVG(pg.score) AS avg_score
+    FROM 
+        player_game pg
+    JOIN 
+        game g ON pg.g_ID = g.game_id
+    GROUP BY 
+        g.game_name
+    ORDER BY 
+        avg_score DESC
+    LIMIT 10;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_feedback_type_percentage()
+RETURNS TABLE (
+    f_type VARCHAR(20),
+    f_percentage NUMERIC
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        feedback_type,
+        ROUND((COUNT(*) * 100.0) / (SELECT COUNT(*) FROM feedback), 2) AS feedback_percentage
+    FROM 
+        feedback
+    GROUP BY 
+        feedback_type
+    ORDER BY 
+        feedback_percentage DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_feedback_type_percentage_last_month()
+RETURNS TABLE (
+    f_type VARCHAR(20),
+    f_percentage NUMERIC
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        feedback_type,
+        ROUND((COUNT(*) * 100.0) / (SELECT COUNT(*) FROM feedback WHERE feedback_date >= CURRENT_DATE - INTERVAL '1 month'), 2) AS feedback_percentage
+    FROM 
+        feedback
+    WHERE 
+        feedback_date >= CURRENT_DATE - INTERVAL '1 month'
+    GROUP BY 
+        feedback_type
+    ORDER BY 
+        feedback_percentage DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+
 
 CREATE OR REPLACE FUNCTION auto_increment_employee_id()
 RETURNS TRIGGER AS $$
@@ -299,18 +369,19 @@ VALUES
 (209, 309, 5);
 
 -- Feedback tablosuna 10 örnek veri
-INSERT INTO feedback (feedback_id, sender_id, sender_name, feedback_type, feedback_info) 
+INSERT INTO feedback (feedback_id, sender_id, sender_name, feedback_type, feedback_info, feedback_date) 
 VALUES 
-(1, 200, 'Ali Veli', 'Positive', 'Great game, I had so much fun!'),
-(1, 201, 'Ahmet Can', 'Negative', 'The game crashes frequently.'),
-(1, 202, 'Ayşe Yılmaz', 'Neutral', 'The gameplay is okay, but could be better.'),
-(1, 203, 'Fatma Kaya', 'Positive', 'Loved the graphics and story!'),
-(1, 204, 'Mehmet Ak', 'Negative', 'The controls are very hard to use.'),
-(1, 205, 'Zeynep Gül', 'Positive', 'Amazing experience, highly recommend!'),
-(1, 206, 'Emre Deniz', 'Neutral', 'It’s alright, but not worth the price.'),
-(1, 207, 'Hakan Çelik', 'Positive', 'I play it every day, so much fun!'),
-(1, 208, 'Melis Öztürk', 'Negative', 'Poor customer support.'),
-(1, 209, 'Ceren Tuncel', 'Positive', 'Best game I’ve played this year!');
+(1, 200, 'Ali Veli', 'Positive', 'Great game, I had so much fun!', '2024-01-15'),
+(1, 201, 'Ahmet Can', 'Negative', 'The game crashes frequently.', '2024-02-12'),
+(1, 202, 'Ayşe Yılmaz', 'Neutral', 'The gameplay is okay, but could be better.', '2024-03-08'),
+(1, 203, 'Fatma Kaya', 'Positive', 'Loved the graphics and story!', '2024-04-20'),
+(1, 204, 'Mehmet Ak', 'Negative', 'The controls are very hard to use.', '2024-12-25'),
+(1, 205, 'Zeynep Gül', 'Positive', 'Amazing experience, highly recommend!', '2024-06-10'),
+(1, 206, 'Emre Deniz', 'Neutral', 'It’s alright, but not worth the price.', '2024-08-05'),
+(1, 207, 'Hakan Çelik', 'Positive', 'I play it every day, so much fun!', '2024-09-14'),
+(1, 208, 'Melis Öztürk', 'Negative', 'Poor customer support.', '2024-11-01'),
+(1, 209, 'Ceren Tuncel', 'Positive', 'Best game I’ve played this year!', '2024-12-10');
+
 
 -- Campaign tablosuna 10 örnek veri
 INSERT INTO campaign (campaign_id, campaign_info, hasReward, reward_info) 
@@ -340,4 +411,4 @@ VALUES
 (1, 208, 'Achievement unlocked: Master Player.', TRUE),
 (1, 209, 'Server maintenance scheduled.', FALSE);
 
-
+SELECT * FROM get_feedback_type_percentage_last_month();
