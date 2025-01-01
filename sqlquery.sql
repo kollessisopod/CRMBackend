@@ -154,7 +154,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_recommended_games_for_player(p_player_id INT)
 RETURNS TABLE (
-    recommended_game_name VARCHAR(20)
+    recommended_game_id int
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -177,7 +177,7 @@ BEGIN
     potential_games AS (
         -- Oyuncunun oynamadığı oyunları bul
         SELECT 
-            g.game_name
+            g.game_id
         FROM 
             game g
         LEFT JOIN 
@@ -188,7 +188,7 @@ BEGIN
     )
     -- Bu oyunlar arasından rastgele 3 tanesini seç
     SELECT 
-        game_name AS recommended_game_name
+        game_id AS recommended_game_id
     FROM 
         potential_games
     ORDER BY 
