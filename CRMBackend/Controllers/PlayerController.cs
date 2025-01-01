@@ -6,6 +6,8 @@ using CRMBackend.Entities;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace CRMBackend.Controllers;
 
@@ -33,6 +35,28 @@ public class PlayerController : ControllerBase
         _playerGameServices = playerGameServices;
     }
 
+
+
+
+    [HttpPost("PlayerLogin")]
+    public async Task<IActionResult> PlayerLogin(PlayerLoginRequest request)
+    {
+        try
+        {
+            var player = await Task.Run(() => _playerServices.GetPlayerByUsername(request.Username));
+            if (player == null || player.Password != request.Password)
+            {
+                return Unauthorized("Invalid username or password");
+            }
+
+            return Ok(new { player.Username, player.Id });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error logging in: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
 
     [HttpPost("SubmitFeedback")]
     public async Task<IActionResult> SubmitFeedback(SubmitFeedbackRequest request)
@@ -129,39 +153,21 @@ public class PlayerController : ControllerBase
                 GameId = request.GameId,
                 Score = request.Score
             };
-            _playerGameServices.CreatePlayerGame(playerGame);
+            
+            int status = _playerGameServices.CreatePlayerGame(playerGame);
             _context.SaveChanges();
-            return Ok("Game rated successfully");
+            if (status == 0)
+            {
+                return Ok("Game rated successfully");
+            }
+            else
+            {
+                return Ok("Game rate updated");
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error rating game: {ex.Message}");
-            return StatusCode(500, "Internal server error");
-        }
-    }
-
-    [HttpPost("ChangeGameScore")]
-    public async Task<IActionResult> ChangeGameScore(RateGameRequest request)
-    {
-        try
-        {
-            var player = await Task.Run(() => _playerServices.GetPlayerByUsername(request.Username));
-            if (player == null)
-            {
-                return NotFound("Player not found");
-            }
-            PlayerGame? playerGame = _playerGameServices.GetPlayerGameByPlayerAndGameId(player.Id, request.GameId);
-            if (playerGame == null)
-            {
-                return NotFound("Game not found");
-            }
-            playerGame.Score = request.Score;
-            _playerGameServices.UpdatePlayerGame(playerGame);
-            return Ok("Game score updated successfully");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"Error updating game score: {ex.Message}");
             return StatusCode(500, "Internal server error");
         }
     }
@@ -202,6 +208,32 @@ public class PlayerController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching notifications: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("DeleteNotification")]
+    public async Task<IActionResult> DeleteNotification(DeleteNotificationRequest request)
+    {
+        try
+        {
+            var player = await Task.Run(() => _playerServices.GetPlayerByUsername(request.Username));
+            if (player == null)
+            {
+                return NotFound("Player not found");
+            }
+            var notification = await Task.Run(() => _context.Notifications.FirstOrDefault(n => n.Id == request.NotificationId && n.PlayerId == player.Id));
+            if (notification == null)
+            {
+                return NotFound("Notification not found");
+            }
+            _context.Notifications.Remove(notification);
+            _context.SaveChanges();
+            return Ok("Notification deleted successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error deleting notification: {ex.Message}");
             return StatusCode(500, "Internal server error");
         }
     }

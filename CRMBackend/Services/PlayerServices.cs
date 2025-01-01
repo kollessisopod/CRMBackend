@@ -18,6 +18,12 @@ public class PlayerServices
     {
         return _context.Players.FirstOrDefault(x => x.Username == username);
     }
+
+    public Player? GetPlayerById(int id)
+    {
+        return _context.Players.FirstOrDefault(x => x.Id == id);
+    }
+
     public Player CreatePlayer(Player player)
     {
         _context.Players.Add(player);
@@ -33,5 +39,8 @@ public class PlayerServices
         _context.SaveChanges();
         return true;
     }
+
+
+
 
 }

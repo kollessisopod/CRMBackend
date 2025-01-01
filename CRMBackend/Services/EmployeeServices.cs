@@ -17,6 +17,10 @@ public class EmployeeServices
     {
         return _context.Employees.FirstOrDefault(e => e.Username == username);
     }
+    public Employee? GetEmployeeById(int id)
+    {
+        return _context.Employees.FirstOrDefault(e => e.Id == id);
+    }
     public Employee CreateEmployee(Employee employee)
     {
         _context.Employees.Add(employee);

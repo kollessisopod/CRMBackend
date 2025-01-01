@@ -1,4 +1,5 @@
 ﻿using CRMBackend.Entities;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace CRMBackend.Services;
 
@@ -9,14 +10,19 @@ public class NotificationServices
     {
         _context = context;
     }
-    public List<Notification>? GetNotificationById(int notificationId)
+    public Notification? GetNotificationById(int notificationId)
     {
-        return _context.Notifications.Where(n => n.NotificationId == notificationId).ToList();
+        return _context.Notifications.FirstOrDefault(n => n.NotificationId == notificationId).ToList();
     }
     public Notification? GetNotificationsByPlayerId(int playerId)
     {
         return _context.Notifications.FirstOrDefault(n => n.PlayerId == playerId);
     }
+    public List<Notification>? GetUnreadNotificationsByPlayerId(int playerId)
+    {
+        return _context.Notifications.Where(n => n.PlayerId == playerId && !n.IsRead).ToList();
+    }
+
     public Notification MarkNotificationRead(Notification notification)
     {
         notification.IsRead = true;
@@ -24,12 +30,24 @@ public class NotificationServices
         _context.SaveChanges();
         return notification;
     }
+
     public Notification CreateNotification(Notification notification)
     {
         _context.Notifications.Add(notification);
         _context.SaveChanges();
         return notification;
     }
+
+    public int GetUnreadNotificationCount(int playerId)
+    {
+        return _context.Notifications.Count(n => n.PlayerId == playerId && !n.IsRead);
+    }
+
+    public int GetNotificationCount(int playerId)
+    {
+        return _context.Notifications.Count(n => n.PlayerId == playerId);
+    }
+
     public void DeleteNotification(int playerId, int notificationId)
     {
         var notification = _context.Notifications.FirstOrDefault(n => n.PlayerId == playerId && n.NotificationId == notificationId);
@@ -39,6 +57,7 @@ public class NotificationServices
             _context.SaveChanges();
         }
     }
+
     public void UpdateNotification(Notification notification)
     {
         _context.Notifications.Update(notification);

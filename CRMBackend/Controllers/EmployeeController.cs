@@ -37,6 +37,27 @@ public class EmployeeController : ControllerBase
         _gameServices = gameServices;
     }
 
+
+    [HttpPost("EmployeeLogin")]
+    public async Task<IActionResult> PlayerLogin(EmployeeLoginRequest request)
+    {
+        try
+        {
+            var employee = await Task.Run(() => _employeeServices.GetEmployeeById(request.Id));
+            if (employee == null || employee.Password != request.Password)
+            {
+                return Unauthorized("Invalid username or password");
+            }
+
+            return Ok(new { employee.Username, employee.Id });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error logging in: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
     [HttpGet("GetEmployees")]
     public async Task<IActionResult> GetEmployees()
     {
@@ -118,7 +139,7 @@ public class EmployeeController : ControllerBase
 
             foreach (var player in playerList)
             {
-                notification.NotificationId = player.Id + 1;
+                notification.NotificationId = 1;
                 notification.PlayerId = player.Id;
                 await Task.Run(() => _notificationServices.CreateNotification(notification));
             }
@@ -131,6 +152,49 @@ public class EmployeeController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    [HttpPost("MarkNotificationRead")]
+    public async Task<IActionResult> MarkNotificationRead(MarkNotificationReadRequest request)
+    {
+        try
+        {
+            var notification = await Task.Run(() => _notificationServices.GetNotificationById(request.NotificationId));
+            if (notification == null)
+            {
+                return NotFound("Notification not found");
+            }
+            await Task.Run(() => _notificationServices.MarkNotificationRead(notification));
+            return Ok("Notification marked as read");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error marking notification as read: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("DeleteNotification")]
+    public async Task<IActionResult> DeleteNotification(DeleteNotificationRequest request)
+    {
+        try
+        {
+            var notification = await Task.Run(() => _notificationServices.GetNotificationById(request.NotificationId));
+            if (notification == null)
+            {
+                return NotFound("Notification not found");
+            }
+            await Task.Run(() => _notificationServices.DeleteNotification(request.PlayerId, request.NotificationId));
+            return Ok("Notification deleted successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error deleting notification: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+
+
 }
 
 

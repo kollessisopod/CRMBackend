@@ -13,16 +13,30 @@ public class PlayerGameServices
     {
         return _context.PlayerGames.Where(pg => pg.PlayerId == playerId).ToList();
     }
+    
     public PlayerGame? GetPlayerGameByPlayerAndGameId(int playerId, int gameId)
     {
         return _context.PlayerGames.FirstOrDefault(pg => pg.PlayerId == playerId && pg.GameId == gameId);
     }
-    public PlayerGame CreatePlayerGame(PlayerGame playerGame)
+    
+    public int CreatePlayerGame(PlayerGame playerGame)
     {
+        var existingPlayerGame = GetPlayerGameByPlayerAndGameId(playerGame.PlayerId, playerGame.GameId);
+
+        if (existingPlayerGame != null)
+        {
+            DeletePlayerGame(playerGame.PlayerId, playerGame.GameId);
+            _context.PlayerGames.Add(playerGame);
+            _context.SaveChanges();
+            return 1;
+        }
+
         _context.PlayerGames.Add(playerGame);
         _context.SaveChanges();
-        return playerGame;
+
+        return 0;
     }
+
     public void DeletePlayerGame(int playerId, int gameId)
     {
         var playerGame = _context.PlayerGames.FirstOrDefault(pg => pg.PlayerId == playerId && pg.GameId == gameId);
