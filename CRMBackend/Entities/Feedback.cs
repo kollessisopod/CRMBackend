@@ -21,4 +21,8 @@ public class Feedback
     [Column("feedback_info")]
     public string FeedbackContent { get; set; }
 
+    [Column("feedback_date")]
+    public DateTime FeedbackDate { get; set; }
+
+
 }

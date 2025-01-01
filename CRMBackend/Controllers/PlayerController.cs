@@ -19,6 +19,10 @@ public class PlayerController : ControllerBase
     private readonly PlayerServices _playerServices;
     private readonly FeedbackServices _feedbackServices;
     private readonly PlayerGameServices _playerGameServices;
+    private readonly NotificationServices _notificationServices;
+    private readonly GameServices _gameServices;
+    private readonly CampaignServices _campaignServices;  
+
 
     private readonly AppDbContext _context;
 
@@ -26,13 +30,19 @@ public class PlayerController : ControllerBase
         AppDbContext context,
         PlayerServices playerServices,
         FeedbackServices feedbackServices,
-        PlayerGameServices playerGameServices)
+        PlayerGameServices playerGameServices,
+        NotificationServices notificationServices,
+        GameServices gameServices,
+        CampaignServices campaignServices)
     {
         _logger = logger;
         _context = context;
         _playerServices = playerServices;
         _feedbackServices = feedbackServices;
         _playerGameServices = playerGameServices;
+        _notificationServices = notificationServices;
+        _gameServices = gameServices;
+        _campaignServices = campaignServices;
     }
 
 
@@ -71,7 +81,6 @@ public class PlayerController : ControllerBase
 
             Feedback feedback = new()
             {
-                Id = 1,
                 PlayerId = player.Id,
                 PlayerUsername = request.Username,
                 FeedbackContent = request.FeedbackContent,
@@ -212,23 +221,37 @@ public class PlayerController : ControllerBase
         }
     }
 
+    [HttpPost("MarkNotificationRead")]
+    public async Task<IActionResult> MarkNotificationRead(MarkNotificationReadRequest request)
+    {
+        try
+        {
+            var notification = await Task.Run(() => _notificationServices.GetNotificationById(request.NotificationId));
+            if (notification == null)
+            {
+                return NotFound("Notification not found");
+            }
+            await Task.Run(() => _notificationServices.MarkNotificationRead(notification));
+            return Ok("Notification marked as read");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error marking notification as read: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
     [HttpPost("DeleteNotification")]
     public async Task<IActionResult> DeleteNotification(DeleteNotificationRequest request)
     {
         try
         {
-            var player = await Task.Run(() => _playerServices.GetPlayerByUsername(request.Username));
-            if (player == null)
-            {
-                return NotFound("Player not found");
-            }
-            var notification = await Task.Run(() => _context.Notifications.FirstOrDefault(n => n.Id == request.NotificationId && n.PlayerId == player.Id));
+            var notification = await Task.Run(() => _notificationServices.GetNotificationById(request.NotificationId));
             if (notification == null)
             {
                 return NotFound("Notification not found");
             }
-            _context.Notifications.Remove(notification);
-            _context.SaveChanges();
+            await Task.Run(() => _notificationServices.DeleteNotification(request.PlayerId, request.NotificationId));
             return Ok("Notification deleted successfully");
         }
         catch (Exception ex)

@@ -23,6 +23,12 @@ public class FeedbackServices
     {
         try
         {
+        feedback.Id = 1;
+        feedback.FeedbackDate = DateTime.Now;
+        if (feedback.FeedbackDate.Kind != DateTimeKind.Utc)
+        {
+            feedback.FeedbackDate = feedback.FeedbackDate.ToUniversalTime();
+        }
         _context.Feedbacks.Add(feedback);
         _context.SaveChanges();
         } catch (Exception ex)

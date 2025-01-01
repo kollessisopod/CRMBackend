@@ -2,6 +2,6 @@
 
 public class DeleteNotificationRequest
 {
-    public int PlayerId { get; set; }
     public int NotificationId { get; set; }
+    public int PlayerId { get; set; }
 }

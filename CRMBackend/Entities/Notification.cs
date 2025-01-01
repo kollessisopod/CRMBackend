@@ -12,7 +12,8 @@ public class Notification
     [Column("reciever_id")]
     public int PlayerId { get; set; }
     [Column("not_info")]
-    public string Content { get; set; }
+    public string? Content { get; set; }
     [Column("is_read")]
     public bool IsRead { get; set; }
+
 }

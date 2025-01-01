@@ -153,45 +153,7 @@ public class EmployeeController : ControllerBase
         }
     }
 
-    [HttpPost("MarkNotificationRead")]
-    public async Task<IActionResult> MarkNotificationRead(MarkNotificationReadRequest request)
-    {
-        try
-        {
-            var notification = await Task.Run(() => _notificationServices.GetNotificationById(request.NotificationId));
-            if (notification == null)
-            {
-                return NotFound("Notification not found");
-            }
-            await Task.Run(() => _notificationServices.MarkNotificationRead(notification));
-            return Ok("Notification marked as read");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"Error marking notification as read: {ex.Message}");
-            return StatusCode(500, "Internal server error");
-        }
-    }
-
-    [HttpPost("DeleteNotification")]
-    public async Task<IActionResult> DeleteNotification(DeleteNotificationRequest request)
-    {
-        try
-        {
-            var notification = await Task.Run(() => _notificationServices.GetNotificationById(request.NotificationId));
-            if (notification == null)
-            {
-                return NotFound("Notification not found");
-            }
-            await Task.Run(() => _notificationServices.DeleteNotification(request.PlayerId, request.NotificationId));
-            return Ok("Notification deleted successfully");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"Error deleting notification: {ex.Message}");
-            return StatusCode(500, "Internal server error");
-        }
-    }
+    
 
 
 

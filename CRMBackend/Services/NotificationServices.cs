@@ -12,7 +12,7 @@ public class NotificationServices
     }
     public Notification? GetNotificationById(int notificationId)
     {
-        return _context.Notifications.FirstOrDefault(n => n.NotificationId == notificationId).ToList();
+        return _context.Notifications.FirstOrDefault(n => n.NotificationId == notificationId);
     }
     public Notification? GetNotificationsByPlayerId(int playerId)
     {
@@ -25,7 +25,7 @@ public class NotificationServices
 
     public Notification MarkNotificationRead(Notification notification)
     {
-        notification.IsRead = true;
+        notification.IsRead = !notification.IsRead;
         _context.Notifications.Update(notification);
         _context.SaveChanges();
         return notification;
