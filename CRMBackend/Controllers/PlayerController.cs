@@ -49,12 +49,12 @@ public class PlayerController : ControllerBase
 
 
     [HttpPost("PlayerLogin")]
-    public async Task<IActionResult> PlayerLogin(PlayerLoginRequest request)
+    public async Task<IActionResult> PlayerLogin([FromForm] string username, [FromForm] string password)
     {
         try
         {
-            var player = await Task.Run(() => _playerServices.GetPlayerByUsername(request.Username));
-            if (player == null || player.Password != request.Password)
+            var player = await Task.Run(() => _playerServices.GetPlayerByUsername(username));
+            if (player == null || player.Password != password)
             {
                 return Unauthorized("Invalid username or password");
             }
