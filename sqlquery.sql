@@ -8,7 +8,9 @@ DROP TABLE IF EXISTS notification CASCADE;
 
 DROP FUNCTION IF EXISTS get_all_players();
 DROP FUNCTION IF EXISTS get_player_avg_score_by_genre(p_player_id INT);
+DROP FUNCTION IF EXISTS get_recommended_games_for_player(p_player_id INT);
 DROP FUNCTION IF EXISTS get_top_10_games_by_avg_score();
+DROP FUNCTION IF EXISTS get_top_10_games_by_popularity();
 DROP FUNCTION IF EXISTS get_feedback_type_percentage();
 DROP FUNCTION IF EXISTS get_feedback_type_percentage_last_month();
 
@@ -64,7 +66,7 @@ CREATE TABLE player(
 
 CREATE TABLE game(
 	game_id int not null primary key,
-	game_name varchar(20) not null,
+	game_name varchar(30) not null,
 	game_genre varchar(20) not null
 );
 
@@ -150,6 +152,52 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION get_recommended_games_for_player(p_player_id INT)
+RETURNS TABLE (
+    recommended_game_name VARCHAR(20)
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH max_genre AS (
+        -- Oyuncunun en yüksek puan verdiği türü bul
+        SELECT 
+            g.game_genre
+        FROM 
+            player_game pg
+        JOIN 
+            game g ON pg.g_ID = g.game_id
+        WHERE 
+            pg.p_ID = p_player_id
+        GROUP BY 
+            g.game_genre
+        ORDER BY 
+            AVG(pg.score) DESC
+        LIMIT 1
+    ),
+    potential_games AS (
+        -- Oyuncunun oynamadığı oyunları bul
+        SELECT 
+            g.game_name
+        FROM 
+            game g
+        LEFT JOIN 
+            player_game pg ON g.game_id = pg.g_ID AND pg.p_ID = p_player_id
+        WHERE 
+            g.game_genre = (SELECT game_genre FROM max_genre)
+            AND pg.g_ID IS NULL
+    )
+    -- Bu oyunlar arasından rastgele 3 tanesini seç
+    SELECT 
+        game_name AS recommended_game_name
+    FROM 
+        potential_games
+    ORDER BY 
+        RANDOM()
+    LIMIT 3;
+END;
+$$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE FUNCTION get_top_10_games_by_avg_score()
 RETURNS TABLE (
     game_name VARCHAR(20),
@@ -168,6 +216,29 @@ BEGIN
         g.game_name
     ORDER BY 
         avg_score DESC
+    LIMIT 10;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION get_top_10_games_by_popularity()
+RETURNS TABLE (
+    game_name VARCHAR(20),
+    popularity bigint
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        g.game_name,
+        COUNT(*) AS popularity
+    FROM 
+        player_game pg
+    JOIN 
+        game g ON pg.g_ID = g.game_id
+    GROUP BY 
+        g.game_name
+    ORDER BY 
+        popularity DESC
     LIMIT 10;
 END;
 $$ LANGUAGE plpgsql;
@@ -211,8 +282,6 @@ BEGIN
         feedback_percentage DESC;
 END;
 $$ LANGUAGE plpgsql;
-
-
 
 CREATE OR REPLACE FUNCTION auto_increment_employee_id()
 RETURNS TRIGGER AS $$
@@ -340,7 +409,8 @@ VALUES
 (1, 'Emre Deniz', 'emredeniz1', 'emredeniz@example.com', '5555555432', '2024-12-12'),
 (1, 'Hakan Çelik', 'hakan1234', 'hakan@example.com', '5555556543', '2024-12-10'),
 (1, 'Melis Öztürk', 'melis1234', 'melis@example.com', '5555558765', '2024-12-08'),
-(1, 'Ceren Tuncel', 'ceren4567', 'ceren@example.com', '5555555432', '2024-12-06');
+(1, 'Ceren Tuncel', 'ceren4567', 'ceren@example.com', '5555555432', '2024-12-06'),
+(1, 'Aziz Çifçibaşı', '20032003', 'azizcifcibasi7@gmail.com', '5555555555', '2024-12-05');
 
 -- Game tablosuna 10 örnek veri
 INSERT INTO game (game_id, game_name, game_genre) 
@@ -354,7 +424,16 @@ VALUES
 (1, 'Among Us', 'Party'),
 (1, 'The Sims', 'Simulation'),
 (1, 'Candy Crush', 'Casual'),
-(1, 'Call of Duty', 'Shooter');
+(1, 'Call of Duty', 'Shooter'),
+(1, 'Crusader Kings 3', 'Grand Strategy'),
+(1, 'Hearts of Iron 4', 'Grand Strategy'),
+(1, 'Victoria 3', 'Grand Strategy'),
+(1, 'Crusader Kings 2', 'Grand Strategy'),
+(1, 'Victoria 2', 'Grand Strategy'),
+(1, 'Europa Universalis 4', 'Grand Strategy'),
+(1, 'Civilization 5', 'Grand Strategy'),
+(1, 'Total War: Three Kingdoms', 'Grand Strategy');
+
 
 INSERT INTO player_game (p_id, g_id, score)
 VALUES
@@ -366,7 +445,12 @@ VALUES
 (205, 306, 8),
 (207, 307, 9),
 (204, 301, 7),
-(209, 309, 5);
+(209, 309, 5),
+(200, 300, 9),
+(210, 300, 8),
+(210, 304, 7),
+(210, 310, 10),
+(210, 312, 9);
 
 -- Feedback tablosuna 10 örnek veri
 INSERT INTO feedback (feedback_id, sender_id, sender_name, feedback_type, feedback_info, feedback_date) 
@@ -411,4 +495,14 @@ VALUES
 (1, 208, 'Achievement unlocked: Master Player.', TRUE),
 (1, 209, 'Server maintenance scheduled.', FALSE);
 
-SELECT * FROM get_feedback_type_percentage_last_month();
+--SELECT * FROM get_feedback_type_percentage_last_month();
+
+--SELECT * FROM get_top_10_games_by_avg_score();
+
+--SELECT * FROM get_top_10_games_by_popularity();
+
+SELECT * FROM get_recommended_games_for_player(210);
+
+--SELECT * FROM game;
+
+--SELECT * FROM player_game;
