@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CRMBackend.Entities;
-using CRMBackend.Requests;
 using CRMBackend.Services;
 using System.Data;
 using System.Data.SqlClient;
@@ -39,12 +38,12 @@ public class EmployeeController : ControllerBase
 
 
     [HttpPost("EmployeeLogin")]
-    public async Task<IActionResult> PlayerLogin(EmployeeLoginRequest request)
+    public async Task<IActionResult> PlayerLogin([FromForm] int id, [FromForm] string password)
     {
         try
         {
-            var employee = await Task.Run(() => _employeeServices.GetEmployeeById(request.Id));
-            if (employee == null || employee.Password != request.Password)
+            var employee = await Task.Run(() => _employeeServices.GetEmployeeById(id));
+            if (employee == null || employee.Password != password)
             {
                 return Unauthorized("Invalid username or password");
             }
@@ -104,13 +103,12 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("CreateGame")]
-    public async Task<IActionResult> CreateGame(CreateGameRequest request)
+    public async Task<IActionResult> CreateGame([FromForm] string name, [FromForm] string genre)
     {
         Game game = new()
         {
-            Id = request.Id,
-            Name = request.Name,
-            Genre = request.Genre
+            Name = name,
+            Genre = genre
         };
         try
         {
@@ -125,11 +123,11 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("SendNotification")]
-    public async Task<IActionResult> SendNotification(SendNotificationRequest request)
+    public async Task<IActionResult> SendNotification([FromForm] string content)
     {
         Notification notification = new()
         {
-            Content = request.Content,
+            Content = content,
             IsRead = false,
         };
 

@@ -48,9 +48,9 @@ public class NotificationServices
         return _context.Notifications.Count(n => n.PlayerId == playerId);
     }
 
-    public void DeleteNotification(int playerId, int notificationId)
+    public void DeleteNotification(int notificationId)
     {
-        var notification = _context.Notifications.FirstOrDefault(n => n.PlayerId == playerId && n.NotificationId == notificationId);
+        var notification = _context.Notifications.FirstOrDefault(n => n.NotificationId == notificationId);
         if (notification != null)
         {
             _context.Notifications.Remove(notification);

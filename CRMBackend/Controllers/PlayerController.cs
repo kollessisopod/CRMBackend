@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using CRMBackend.Requests;
 using CRMBackend.Services;
 using Microsoft.EntityFrameworkCore;
 using CRMBackend.Entities;
@@ -69,11 +68,11 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("SubmitFeedback")]
-    public async Task<IActionResult> SubmitFeedback(SubmitFeedbackRequest request)
+    public async Task<IActionResult> SubmitFeedback([FromForm] int id, [FromForm] string feedbackType, [FromForm] string feedbackContent)
     {
         try
         {
-            var player = await Task.Run(() => _playerServices.GetPlayerByUsername(request.Username));
+            var player = await Task.Run(() => _playerServices.GetPlayerById(id));
             if (player == null)
             {
                 return NotFound("Player not found");
@@ -82,9 +81,9 @@ public class PlayerController : ControllerBase
             Feedback feedback = new()
             {
                 PlayerId = player.Id,
-                PlayerUsername = request.Username,
-                FeedbackContent = request.FeedbackContent,
-                FeedbackType = request.FeedbackType
+                PlayerUsername = player.Username,
+                FeedbackContent = feedbackContent,
+                FeedbackType = feedbackType
             };
 
             if (_feedbackServices.CreateFeedback(feedback) != null)
@@ -119,11 +118,11 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("ListPlayedGames")]
-    public async Task<IActionResult> ListPlayedGames(UsernameRequest request)
+    public async Task<IActionResult> ListPlayedGames([FromForm] int id)
     {
         try
         {
-            var player = await Task.Run(() => _playerServices.GetPlayerByUsername(request.Username));
+            var player = await Task.Run(() => _playerServices.GetPlayerById(id));
             if (player == null)
             {
                 return NotFound("Player not found");
@@ -146,11 +145,11 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("SubmitGameScore")]
-    public async Task<IActionResult> RateGame(RateGameRequest request)
+    public async Task<IActionResult> RateGame([FromForm] int id, [FromForm] int gameId, [FromForm] int score)
     {
         try
         {
-            var player = await Task.Run(() => _playerServices.GetPlayerByUsername(request.Username));
+            var player = await Task.Run(() => _playerServices.GetPlayerById(id));
             if (player == null)
             {
                 return NotFound("Player not found");
@@ -159,8 +158,8 @@ public class PlayerController : ControllerBase
             PlayerGame playerGame = new PlayerGame
             {
                 PlayerId = player.Id,
-                GameId = request.GameId,
-                Score = request.Score
+                GameId = gameId,
+                Score = score
             };
             
             int status = _playerGameServices.CreatePlayerGame(playerGame);
@@ -182,16 +181,16 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("DeleteGameScore")]
-    public async Task<IActionResult> DeleteGameScore(RateGameRequest request)
+    public async Task<IActionResult> DeleteGameScore([FromForm] int id, [FromForm] int gameId)
     {
         try
         {
-            var player = await Task.Run(() => _playerServices.GetPlayerByUsername(request.Username));
+            var player = await Task.Run(() => _playerGameServices.GetPlayerGameByPlayerAndGameId(id, gameId));
             if (player == null)
             {
                 return NotFound("Player not found");
             }
-            _playerGameServices.DeletePlayerGame(player.Id, request.GameId);
+            _playerGameServices.DeletePlayerGame(id, gameId);
             return Ok("Game score deleted successfully");
         }
         catch (Exception ex)
@@ -202,11 +201,11 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("ListNotifications")]
-    public async Task<IActionResult> ListNotifications(UsernameRequest request)
+    public async Task<IActionResult> ListNotifications([FromForm] int id)
     {
         try
         {
-            var player = await Task.Run(() => _playerServices.GetPlayerByUsername(request.Username));
+            var player = await Task.Run(() => _playerServices.GetPlayerById(id));
             if (player == null)
             {
                 return NotFound("Player not found");
@@ -222,11 +221,11 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("MarkNotificationRead")]
-    public async Task<IActionResult> MarkNotificationRead(MarkNotificationReadRequest request)
+    public async Task<IActionResult> MarkNotificationRead([FromForm] int notificationId)
     {
         try
         {
-            var notification = await Task.Run(() => _notificationServices.GetNotificationById(request.NotificationId));
+            var notification = await Task.Run(() => _notificationServices.GetNotificationById(notificationId));
             if (notification == null)
             {
                 return NotFound("Notification not found");
@@ -242,16 +241,16 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("DeleteNotification")]
-    public async Task<IActionResult> DeleteNotification(DeleteNotificationRequest request)
+    public async Task<IActionResult> DeleteNotification([FromForm] int notificationId )
     {
         try
         {
-            var notification = await Task.Run(() => _notificationServices.GetNotificationById(request.NotificationId));
+            var notification = await Task.Run(() => _notificationServices.GetNotificationById(notificationId));
             if (notification == null)
             {
                 return NotFound("Notification not found");
             }
-            await Task.Run(() => _notificationServices.DeleteNotification(request.PlayerId, request.NotificationId));
+            await Task.Run(() => _notificationServices.DeleteNotification(notificationId));
             return Ok("Notification deleted successfully");
         }
         catch (Exception ex)
