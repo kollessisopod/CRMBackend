@@ -3,7 +3,6 @@ using CRMBackend.Requests;
 using CRMBackend.Services;
 using Microsoft.EntityFrameworkCore;
 using CRMBackend.Entities;
-using CRMBackend.Auth;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,14 +11,12 @@ namespace CRMBackend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-//[Authorize]
 public class PlayerController : ControllerBase
 {
     private readonly ILogger<PlayerController> _logger;
     private readonly PlayerServices _playerServices;
     private readonly FeedbackServices _feedbackServices;
     private readonly PlayerGameServices _playerGameServices;
-    private readonly TokenHelper _tokenHelper;
 
     private readonly AppDbContext _context;
 
@@ -27,43 +24,15 @@ public class PlayerController : ControllerBase
         AppDbContext context,
         PlayerServices playerServices,
         FeedbackServices feedbackServices,
-        PlayerGameServices playerGameServices,
-        TokenHelper tokenHelper)
+        PlayerGameServices playerGameServices)
     {
         _logger = logger;
         _context = context;
         _playerServices = playerServices;
         _feedbackServices = feedbackServices;
         _playerGameServices = playerGameServices;
-        _tokenHelper = tokenHelper;
     }
 
-
-    [HttpPost("Login")]
-    [AllowAnonymous]
-    public async Task<IActionResult> Login(LoginRequest request)
-    {
-        Player? user = await _context.Players.FirstOrDefaultAsync(x => x.Username == request.Username);
-        if (user == null )
-        {
-            return Unauthorized("Invalid username");
-        }
-
-        if (user.Password != request.Password) 
-        {
-            return Unauthorized("Invalid password.");
-        }
-
-
-        var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Name, user.Username)
-        };
-
-        var token = _tokenHelper.CreateToken(claims, TimeSpan.FromHours(1));
-        return Ok(new { Token = token });
-    }
 
     [HttpPost("SubmitFeedback")]
     public async Task<IActionResult> SubmitFeedback(SubmitFeedbackRequest request)
