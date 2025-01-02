@@ -104,7 +104,7 @@ CREATE TABLE campaign(
 CREATE TABLE notification(
 	not_id int not null primary key,
 	reciever_id int not null,
-	not_info varchar(200) not null,
+	not_info varchar(100) not null,
 	is_read boolean,
 	
 	CONSTRAINT fk_not FOREIGN KEY (reciever_id)
@@ -410,7 +410,7 @@ VALUES
 (1, 'Hakan Çelik', 'hakan1234', 'hakan@example.com', '5555556543', '2024-12-10'),
 (1, 'Melis Öztürk', 'melis1234', 'melis@example.com', '5555558765', '2024-12-08'),
 (1, 'Ceren Tuncel', 'ceren4567', 'ceren@example.com', '5555555432', '2024-12-06'),
-(1, 'Aziz Çifçibaşı', '20032003', 'azizcifcibasi7@gmail.com', '5555555555', '2024-12-05');
+(1, 'Aziz Çifçibaşı', '1', 'azizcifcibasi7@gmail.com', '5555555555', '2024-12-05');
 
 -- Game tablosuna 10 örnek veri
 INSERT INTO game (game_id, game_name, game_genre) 
@@ -432,7 +432,10 @@ VALUES
 (1, 'Victoria 2', 'Grand Strategy'),
 (1, 'Europa Universalis 4', 'Grand Strategy'),
 (1, 'Civilization 5', 'Grand Strategy'),
-(1, 'Total War: Three Kingdoms', 'Grand Strategy');
+(1, 'Total War: Three Kingdoms', 'Grand Strategy'),
+(1, 'Civilization 5', 'Grand Strategy'),
+(1, 'Humankind', 'Grand Strategy'),
+(1, 'Stellaris', 'Grand Strategy');
 
 
 INSERT INTO player_game (p_id, g_id, score)
@@ -465,7 +468,8 @@ VALUES
 (1, 207, 'Hakan Çelik', 'Positive', 'I use it every day, so much fun!', '2024-09-14'),
 (1, 208, 'Melis Öztürk', 'Negative', 'Poor customer support.', '2024-11-01'),
 (1, 209, 'Ceren Tuncel', 'Positive', 'Best system I’ve used this year!', '2024-12-10'),
-(1, 210, 'Aziz Çifçibaşı', 'Positive', 'It is better than Steam','2024-12-02');
+(1, 210, 'Aziz Çifçibaşı', 'Positive', 'It is better than Steam','2024-12-02'),
+(1, 210, 'Aziz Çifçibaşı', 'Neutral', 'Customer support could be better but other things are ok.','2024-12-04');
 
 
 -- Campaign tablosuna 10 örnek veri
@@ -495,7 +499,8 @@ VALUES
 (1, 207, 'Weekly challenge completed!', TRUE),
 (1, 208, 'Achievement unlocked: Master Player.', TRUE),
 (1, 209, 'Server maintenance scheduled.', FALSE),
-(1, 210, 'Achievement unlocked: Master Strategist.', TRUE);
+(1, 210, 'Achievement unlocked: Master Strategist.', TRUE),
+(1, 210, 'Special offer: Get 50% off on Roman Empire DLC now!', FALSE);
 
 --SELECT * FROM get_feedback_type_percentage_last_month();
 
@@ -508,7 +513,3 @@ SELECT * FROM get_recommended_games_for_player(210);
 --SELECT * FROM game;
 
 --SELECT * FROM player_game;
-
-SELECT column_name 
-FROM information_schema.columns 
-WHERE table_name = 'campaign';
