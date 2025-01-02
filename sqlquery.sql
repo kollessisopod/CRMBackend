@@ -455,16 +455,17 @@ VALUES
 -- Feedback tablosuna 10 örnek veri
 INSERT INTO feedback (feedback_id, sender_id, sender_name, feedback_type, feedback_info, feedback_date) 
 VALUES 
-(1, 200, 'Ali Veli', 'Positive', 'Great game, I had so much fun!', '2024-01-15'),
-(1, 201, 'Ahmet Can', 'Negative', 'The game crashes frequently.', '2024-02-12'),
-(1, 202, 'Ayşe Yılmaz', 'Neutral', 'The gameplay is okay, but could be better.', '2024-03-08'),
-(1, 203, 'Fatma Kaya', 'Positive', 'Loved the graphics and story!', '2024-04-20'),
-(1, 204, 'Mehmet Ak', 'Negative', 'The controls are very hard to use.', '2024-12-25'),
+(1, 200, 'Ali Veli', 'Positive', 'Great system, i like it!', '2024-01-15'),
+(1, 201, 'Ahmet Can', 'Negative', 'The system crashes frequently.', '2024-02-12'),
+(1, 202, 'Ayşe Yılmaz', 'Neutral', 'The UI is okay, but could be better.', '2024-03-08'),
+(1, 203, 'Fatma Kaya', 'Positive', 'Loved the style of UI!', '2024-04-20'),
+(1, 204, 'Mehmet Ak', 'Negative', 'The menus are very hard to use.', '2024-12-25'),
 (1, 205, 'Zeynep Gül', 'Positive', 'Amazing experience, highly recommend!', '2024-06-10'),
-(1, 206, 'Emre Deniz', 'Neutral', 'It’s alright, but not worth the price.', '2024-08-05'),
-(1, 207, 'Hakan Çelik', 'Positive', 'I play it every day, so much fun!', '2024-09-14'),
+(1, 206, 'Emre Deniz', 'Neutral', 'It’s alright, but not better then other systems.', '2024-08-05'),
+(1, 207, 'Hakan Çelik', 'Positive', 'I use it every day, so much fun!', '2024-09-14'),
 (1, 208, 'Melis Öztürk', 'Negative', 'Poor customer support.', '2024-11-01'),
-(1, 209, 'Ceren Tuncel', 'Positive', 'Best game I’ve played this year!', '2024-12-10');
+(1, 209, 'Ceren Tuncel', 'Positive', 'Best system I’ve used this year!', '2024-12-10'),
+(1, 210, 'Aziz Çifçibaşı', 'Positive', 'It is better than Steam','2024-12-02');
 
 
 -- Campaign tablosuna 10 örnek veri
@@ -493,7 +494,8 @@ VALUES
 (1, 206, 'Your XP boost has expired.', TRUE),
 (1, 207, 'Weekly challenge completed!', TRUE),
 (1, 208, 'Achievement unlocked: Master Player.', TRUE),
-(1, 209, 'Server maintenance scheduled.', FALSE);
+(1, 209, 'Server maintenance scheduled.', FALSE),
+(1, 210, 'Achievement unlocked: Master Strategist.', TRUE);
 
 --SELECT * FROM get_feedback_type_percentage_last_month();
 
@@ -501,7 +503,7 @@ VALUES
 
 --SELECT * FROM get_top_10_games_by_popularity();
 
---SELECT * FROM get_recommended_games_for_player(210);
+SELECT * FROM get_recommended_games_for_player(210);
 
 --SELECT * FROM game;
 
