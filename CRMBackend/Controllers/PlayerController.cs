@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Npgsql;
+using CRMBackend.Dtos;
 
 namespace CRMBackend.Controllers;
 
@@ -21,7 +23,7 @@ public class PlayerController : ControllerBase
     private readonly PlayerGameServices _playerGameServices;
     private readonly NotificationServices _notificationServices;
     private readonly GameServices _gameServices;
-    private readonly CampaignServices _campaignServices;  
+    private readonly CampaignServices _campaignServices;
 
 
     private readonly AppDbContext _context;
@@ -88,7 +90,7 @@ public class PlayerController : ControllerBase
             if (_feedbackServices.CreateFeedback(feedback) != null)
             {
                 return Ok("Feedback inserted successfully");
-            } 
+            }
             else
             {
                 return StatusCode(500, "Internal server error");
@@ -133,8 +135,21 @@ public class PlayerController : ControllerBase
                 return NotFound("No games found");
             }
             var gamesIds = playedGames.Select(pg => pg.GameId).ToList();
-            var games = await Task.Run(() => _context.Games.Where(g => gamesIds.Contains(g.Id)).ToList());
-            return Ok(playedGames);
+
+            var games = await Task.WhenAll(
+                gamesIds.Select(async gameId =>
+                {
+                    var game = _gameServices.GetGameById(gameId);
+                    var playedGame = playedGames.FirstOrDefault(pg => pg.GameId == gameId);
+                    return new
+                    {
+                        Game = game,
+                        Score = playedGame?.Score, // Use null conditional in case playedGame is null
+                    };
+                })
+            );
+
+            return Ok(games);
         }
         catch (Exception ex)
         {
@@ -153,14 +168,14 @@ public class PlayerController : ControllerBase
             {
                 return NotFound("Player not found");
             }
-            
+
             PlayerGame playerGame = new PlayerGame
             {
                 PlayerId = player.Id,
                 GameId = gameId,
                 Score = score
             };
-            
+
             int status = _playerGameServices.CreatePlayerGame(playerGame);
             _context.SaveChanges();
             if (status == 0)
@@ -240,7 +255,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("DeleteNotification")]
-    public async Task<IActionResult> DeleteNotification([FromForm] int notificationId )
+    public async Task<IActionResult> DeleteNotification([FromForm] int notificationId)
     {
         try
         {
@@ -258,6 +273,45 @@ public class PlayerController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    [HttpPost("ListRecommendedGames")]
+    public async Task<IActionResult> ListRecommendedGames([FromForm] int id)
+    {
+        try
+        {
+            var player = await Task.Run(() => _playerServices.GetPlayerById(id));
+            if (player == null)
+            {
+                return NotFound("Player not found");
+            }
+
+            var recommendedGames = new List<Game>();
+
+            // Use raw SQL query to call the stored function directly
+            var query = "SELECT * FROM get_recommended_games_for_player(@playerId);";
+            var games = await _context.Database
+                                      .SqlQueryRaw<RecommendedGameDto>(query, new NpgsqlParameter("@playerId", id))
+                                      .AsNoTracking()
+                                      .ToListAsync();
+
+            Console.WriteLine("GAMES>" + games);
+
+            foreach (var g in games)
+            {
+                Game game = _gameServices.GetGameById(g.RecommendedGameId);
+                recommendedGames.Add(game);
+            }
+
+            return Ok(recommendedGames);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching recommended games: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+
 
 
 }

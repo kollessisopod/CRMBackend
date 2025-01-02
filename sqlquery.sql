@@ -104,7 +104,7 @@ CREATE TABLE campaign(
 CREATE TABLE notification(
 	not_id int not null primary key,
 	reciever_id int not null,
-	not_info varchar(50) not null,
+	not_info varchar(200) not null,
 	is_read boolean,
 	
 	CONSTRAINT fk_not FOREIGN KEY (reciever_id)
@@ -508,3 +508,7 @@ SELECT * FROM get_recommended_games_for_player(210);
 --SELECT * FROM game;
 
 --SELECT * FROM player_game;
+
+SELECT column_name 
+FROM information_schema.columns 
+WHERE table_name = 'campaign';

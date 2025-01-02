@@ -6,6 +6,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Text;
 using System.Runtime.CompilerServices;
+using CRMBackend.Dtos;
+using Npgsql;
 
 namespace CRMBackend.Controllers;
 
@@ -43,7 +45,7 @@ public class EmployeeController : ControllerBase
 
 
     [HttpPost("EmployeeLogin")]
-    public async Task<IActionResult> PlayerLogin([FromForm] int id, [FromForm] string password)
+    public async Task<IActionResult> EmployeeLogin([FromForm] int id, [FromForm] string password)
     {
         try
         {
@@ -53,7 +55,7 @@ public class EmployeeController : ControllerBase
                 return Unauthorized("Invalid username or password");
             }
 
-            return Ok(new { employee.Username, employee.Id });
+            return Ok(new { employee.Username, employee.Id, employee.UserType });
         }
         catch (Exception ex)
         {
@@ -142,8 +144,8 @@ public class EmployeeController : ControllerBase
         }
     }
 
-    [HttpPost("SendNotification")]
-    public async Task<IActionResult> SendNotification([FromForm] string content)
+    [HttpPost("SendNotificationToAll")]
+    public async Task<IActionResult> SendNotificationToAll([FromForm] string content)
     {
         Notification notification = new()
         {
@@ -162,7 +164,39 @@ public class EmployeeController : ControllerBase
                 await Task.Run(() => _notificationServices.CreateNotification(notification));
             }
 
-            return Ok("Notifications sent successfully");
+            return Ok(new { success = true, message = "Notification sent successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error sending notification: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+
+    [HttpPost("SendNotificationToSelected")]
+    public async Task<IActionResult> SendNotificationToSelected([FromForm] string content, [FromForm] List<int> ids)
+    {
+        Notification notification = new()
+        {
+            Content = content,
+            IsRead = false,
+        };
+
+        try
+        {
+            var allPlayerList = await Task.Run(() => _playerServices.GetPlayers());
+
+            var playerList = allPlayerList.Where(p => ids.Contains(p.Id)).ToList();
+
+            foreach (var player in playerList)
+            {
+                notification.NotificationId = 1;
+                notification.PlayerId = player.Id;
+                await Task.Run(() => _notificationServices.CreateNotification(notification));
+            }
+
+            return Ok("Notification(s) sent successfully");
         }
         catch (Exception ex)
         {
@@ -183,7 +217,10 @@ public class EmployeeController : ControllerBase
                 RewardInfo = rewardInfo
             };
             await Task.Run(() => _campaignServices.CreateCampaign(campaign));
-            return Ok("Campaign created successfully");
+
+            await Task.Run(() => AnnounceCampaign(campaign));
+
+            return Ok(new { success = true, message = "Notification sent successfully" });
         }
         catch (Exception ex)
         {
@@ -213,16 +250,10 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("AnnounceCampaign")]
-    public async Task<IActionResult> AnnounceCampaign([FromForm] int campaignId)
+    public async Task<IActionResult> AnnounceCampaign(Campaign campaign)
     {
         try
         {
-            var campaign = await Task.Run(() => _campaignServices.GetCampaignById(campaignId));
-            if (campaign == null)
-            {
-                return NotFound("Campaign not found");
-            }
-
             StringBuilder campaignStringBuilder = new StringBuilder()
                 .Append("New Event: ")
                 .Append(campaign.Info);
@@ -234,7 +265,7 @@ public class EmployeeController : ControllerBase
             }
 
             String campaignString = campaignStringBuilder.ToString();
-            await SendNotification(campaignString);
+            await SendNotificationToAll(campaignString);
 
             return Ok("Campaign announced successfully");
         }
@@ -245,7 +276,87 @@ public class EmployeeController : ControllerBase
         }
     }
 
+    [HttpGet("GetTopTenGamesByPositivity")]
+    public async Task<IActionResult> GetTopTenGamesByPositivity()
+    {
+        try
+        {
+            var query = "SELECT game_id AS GameId, avg_score AS AvgScore FROM get_top_10_games_by_avg_score();";
+
+            var results = await _context.Database
+                .SqlQueryRaw<PositivityGameDto>(query)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var gamesList = await Task.WhenAll(results.Select(async r => {
+                var game = _gameServices.GetGameById(r.GameId);
+                return new
+                {
+                    Game = game,
+                    PositivityScore = r.AvgScore
+                };
+            }));
+
+            return Ok(gamesList);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching recommended games: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("GetTopTenGamesByPopularity")]
+    public async Task<IActionResult> GetTopTenGamesByPopularity()
+    {
+        try
+        {
+            var query = "SELECT game_id AS GameId, popularity AS Popularity FROM get_top_10_games_by_popularity();";
+
+            var results = await _context.Database
+                .SqlQueryRaw<PopularityGameDto>(query)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var gamesList = await Task.WhenAll(results.Select(async r => {
+                var game = _gameServices.GetGameById(r.GameId);
+                return new
+                {
+                    Game = game,
+                    PopularityScore = r.Popularity
+                };
+            }));
+
+            return Ok(gamesList);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching recommended games: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("GetFeedbackTypePercentages")]
+    public async Task<IActionResult> GetFeedbackTypePercentages()
+    {
+        try
+        {
+            var query = "SELECT f_type AS FType, f_percentage AS FPercentage FROM get_feedback_type_percentage_last_month();";
+
+            var results = await _context.Database
+                .SqlQueryRaw<FeedbackTypePercentageDto>(query)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return Ok(results);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching feedback type percentages: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+
 
 }
-
-
