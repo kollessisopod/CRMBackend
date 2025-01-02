@@ -6,6 +6,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Text;
 using System.Runtime.CompilerServices;
+using CRMBackend.Dtos;
+using Npgsql;
 
 namespace CRMBackend.Controllers;
 
@@ -43,7 +45,7 @@ public class EmployeeController : ControllerBase
 
 
     [HttpPost("EmployeeLogin")]
-    public async Task<IActionResult> PlayerLogin([FromForm] int id, [FromForm] string password)
+    public async Task<IActionResult> EmployeeLogin([FromForm] int id, [FromForm] string password)
     {
         try
         {
@@ -245,6 +247,61 @@ public class EmployeeController : ControllerBase
         }
     }
 
+    [HttpGet("GetTopTenGamesByPositivity")]
+    public async Task<IActionResult> GetTopTenGamesByPositivity()
+    {
+        try
+        {
+            var gamesList = new List<(Game Game, decimal PositivityScore)>();
+
+            var query = "SELECT * FROM get_top_10_games_by_avg_score();";
+            var games = await _context.Database
+                                      .SqlQueryRaw<PositivityGameDto>(query)
+                                      .AsNoTracking()
+                                      .ToListAsync();
+
+            foreach (var g in games)
+            {
+                Game game = _gameServices.GetGameById(g.GameId);
+                gamesList.Add((game, g.AvgScore));
+            }
+
+            return Ok(gamesList);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching recommended games: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("GetTopTenGamesByPopularity")]
+    public async Task<IActionResult> GetTopTenGamesByPopularity()
+    {
+        try
+        {
+            var gamesList = new List<(Game Game, long PopularityScore)>();
+
+            var query = "SELECT * FROM get_top_10_games_by_popularity();";
+            var games = await _context.Database
+                                      .SqlQueryRaw<PopularityGameDto>(query)
+                                      .AsNoTracking()
+                                      .ToListAsync();
+
+            foreach (var g in games)
+            {
+                Game game = _gameServices.GetGameById(g.GameId);
+                gamesList.Add((game, g.Popularity));
+            }
+
+            return Ok(gamesList);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching recommended games: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
 
 }
 

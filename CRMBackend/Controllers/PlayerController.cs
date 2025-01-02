@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Npgsql;
+using CRMBackend.Dtos;
 
 namespace CRMBackend.Controllers;
 
@@ -258,6 +260,45 @@ public class PlayerController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    [HttpPost("ListRecommendedGames")]
+    public async Task<IActionResult> ListRecommendedGames([FromForm] int id)
+    {
+        try
+        {
+            var player = await Task.Run(() => _playerServices.GetPlayerById(id));
+            if (player == null)
+            {
+                return NotFound("Player not found");
+            }
+
+            var recommendedGames = new List<Game>();
+
+            // Use raw SQL query to call the stored function directly
+            var query = "SELECT * FROM get_recommended_games_for_player(@playerId);";
+            var games = await _context.Database
+                                      .SqlQueryRaw<RecommendedGameDto>(query, new NpgsqlParameter("@playerId", id))
+                                      .AsNoTracking()
+                                      .ToListAsync();
+
+            Console.WriteLine("GAMES>" + games);
+
+            foreach ( var g in games )
+            {
+                Game game = _gameServices.GetGameById(g.RecommendedGameId);
+                recommendedGames.Add(game);
+            }
+
+            return Ok(recommendedGames);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching recommended games: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    
 
 
 }
