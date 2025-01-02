@@ -220,7 +220,7 @@ public class EmployeeController : ControllerBase
 
             await Task.Run(() => AnnounceCampaign(campaign));
 
-            return Ok("Campaign created successfully");
+            return Ok(new { success = true, message = "Notification sent successfully" });
         }
         catch (Exception ex)
         {
@@ -249,6 +249,7 @@ public class EmployeeController : ControllerBase
         }
     }
 
+    [HttpPost("AnnounceCampaign")]
     public async Task<IActionResult> AnnounceCampaign(Campaign campaign)
     {
         try
