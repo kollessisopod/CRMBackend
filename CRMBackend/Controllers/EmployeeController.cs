@@ -144,8 +144,8 @@ public class EmployeeController : ControllerBase
         }
     }
 
-    [HttpPost("SendNotification")]
-    public async Task<IActionResult> SendNotification([FromForm] string content)
+    [HttpPost("SendNotificationToAll")]
+    public async Task<IActionResult> SendNotificationToAll([FromForm] string content)
     {
         Notification notification = new()
         {
@@ -173,6 +173,38 @@ public class EmployeeController : ControllerBase
         }
     }
 
+
+    [HttpPost("SendNotificationToSelected")]
+    public async Task<IActionResult> SendNotificationToSelected([FromForm] string content, [FromForm] List<int> ids)
+    {
+        Notification notification = new()
+        {
+            Content = content,
+            IsRead = false,
+        };
+
+        try
+        {
+            var allPlayerList = await Task.Run(() => _playerServices.GetPlayers());
+
+            var playerList = allPlayerList.Where(p => ids.Contains(p.Id)).ToList();
+
+            foreach (var player in playerList)
+            {
+                notification.NotificationId = 1;
+                notification.PlayerId = player.Id;
+                await Task.Run(() => _notificationServices.CreateNotification(notification));
+            }
+
+            return Ok("Notification(s) sent successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error sending notification: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
     [HttpPost("CreateCampaign")]
     public async Task<IActionResult> CreateCampaign([FromForm] string campaignInfo, [FromForm] bool hasReward, [FromForm] string rewardInfo)
     {
@@ -185,6 +217,9 @@ public class EmployeeController : ControllerBase
                 RewardInfo = rewardInfo
             };
             await Task.Run(() => _campaignServices.CreateCampaign(campaign));
+
+            await Task.Run(() => AnnounceCampaign(campaign.Id));
+
             return Ok("Campaign created successfully");
         }
         catch (Exception ex)
@@ -236,7 +271,7 @@ public class EmployeeController : ControllerBase
             }
 
             String campaignString = campaignStringBuilder.ToString();
-            await SendNotification(campaignString);
+            await SendNotificationToAll(campaignString);
 
             return Ok("Campaign announced successfully");
         }
