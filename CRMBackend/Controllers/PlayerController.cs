@@ -137,14 +137,17 @@ public class PlayerController : ControllerBase
             var gamesIds = playedGames.Select(pg => pg.GameId).ToList();
 
             var games = await Task.WhenAll(
-                gamesIds.Select(async r => {
-                var game = _gameServices.GetGameById(r);
-                return new
+                gamesIds.Select(async gameId =>
                 {
-                    Game = game,
-                    Score = playedGames[r].Score,
-                };
-            }));
+                    var game = _gameServices.GetGameById(gameId);
+                    var playedGame = playedGames.FirstOrDefault(pg => pg.GameId == gameId);
+                    return new
+                    {
+                        Game = game,
+                        Score = playedGame?.Score, // Use null conditional in case playedGame is null
+                    };
+                })
+            );
 
             return Ok(games);
         }
