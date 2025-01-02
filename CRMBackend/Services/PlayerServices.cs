@@ -26,6 +26,8 @@ public class PlayerServices
 
     public Player CreatePlayer(Player player)
     {
+        player.LastOnline = DateTime.Now;  
+        player.Id = 1;
         _context.Players.Add(player);
         _context.SaveChanges();
         return player;

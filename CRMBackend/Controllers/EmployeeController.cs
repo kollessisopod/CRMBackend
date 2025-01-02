@@ -144,6 +144,66 @@ public class EmployeeController : ControllerBase
         }
     }
 
+    [HttpGet("GetGameById")]
+    public async Task<IActionResult> GetGameById([FromForm] int id)
+    {
+        try
+        {
+            var game = await Task.Run(() => _gameServices.GetGameById(id));
+            if (game == null)
+            {
+                return NotFound("Game not found");
+            }
+            return Ok(game);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching game: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("GetGameByName")]
+    public async Task<IActionResult> GetGameByName([FromForm] string name)
+    {
+        try
+        {
+            var game = await Task.Run(() => _gameServices.GetGameByName(name));
+            if (game == null)
+            {
+                return NotFound("Game not found");
+            }
+            return Ok(game);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching game: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("CreateEmployee")]
+    public async Task<IActionResult> CreateEmployee([FromForm] string username, [FromForm] string password, [FromForm] bool userType)
+    {
+        Employee employee = new()   
+        {
+            Username = username,
+            Password = password,
+            UserType = userType
+        };
+        try
+        {
+            await Task.Run(() => _employeeServices.CreateEmployee(employee));
+            return Ok("Employee created successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error creating employee: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+
     [HttpPost("SendNotificationToAll")]
     public async Task<IActionResult> SendNotificationToAll([FromForm] string content)
     {
