@@ -218,7 +218,7 @@ public class EmployeeController : ControllerBase
             };
             await Task.Run(() => _campaignServices.CreateCampaign(campaign));
 
-            await Task.Run(() => AnnounceCampaign(campaign.Id));
+            await Task.Run(() => AnnounceCampaign(campaign));
 
             return Ok("Campaign created successfully");
         }
@@ -249,17 +249,10 @@ public class EmployeeController : ControllerBase
         }
     }
 
-    [HttpPost("AnnounceCampaign")]
-    public async Task<IActionResult> AnnounceCampaign([FromForm] int campaignId)
+    public async Task<IActionResult> AnnounceCampaign(Campaign campaign)
     {
         try
         {
-            var campaign = await Task.Run(() => _campaignServices.GetCampaignById(campaignId));
-            if (campaign == null)
-            {
-                return NotFound("Campaign not found");
-            }
-
             StringBuilder campaignStringBuilder = new StringBuilder()
                 .Append("New Event: ")
                 .Append(campaign.Info);
