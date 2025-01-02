@@ -135,8 +135,18 @@ public class PlayerController : ControllerBase
                 return NotFound("No games found");
             }
             var gamesIds = playedGames.Select(pg => pg.GameId).ToList();
-            var games = await Task.Run(() => _context.Games.Where(g => gamesIds.Contains(g.Id)).ToList());
-            return Ok(playedGames);
+
+            var games = await Task.WhenAll(
+                gamesIds.Select(async r => {
+                var game = _gameServices.GetGameById(r);
+                return new
+                {
+                    Game = game,
+                    Score = playedGames[r].Score,
+                };
+            }));
+
+            return Ok(games);
         }
         catch (Exception ex)
         {
