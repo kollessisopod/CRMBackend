@@ -55,7 +55,7 @@ public class EmployeeController : ControllerBase
                 return Unauthorized("Invalid username or password");
             }
 
-            return Ok(new { employee.Username, employee.Id });
+            return Ok(new { employee.Username, employee.Id, employee.UserType });
         }
         catch (Exception ex)
         {
