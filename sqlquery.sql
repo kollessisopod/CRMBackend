@@ -386,8 +386,8 @@ EXECUTE FUNCTION auto_increment_notification_id();
 -- Employee tablosuna 10 örnek veri
 INSERT INTO employee (employee_id, e_name, e_password, e_email, e_type) 
 VALUES 
-(1, 'John Doe', 'secure123', 'johndoe@example.com', TRUE),
-(1, 'Jane Smith', 'password456', 'janesmith@example.com', FALSE),
+(1, 'John Doe', '1', 'johndoe@example.com', TRUE),
+(1, 'Jane Smith', '1', 'janesmith@example.com', FALSE),
 (1, 'Robert Brown', 'pass789', 'robertbrown@example.com', TRUE),
 (1, 'Emily Davis', 'emilyd123', 'emilydavis@example.com', TRUE),
 (1, 'Michael Johnson', 'mjohnson1', 'michaeljohnson@example.com', FALSE),
