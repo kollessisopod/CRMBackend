@@ -10,7 +10,7 @@ public class Campaign
     public int Id { get; set; }
     [Column("campaign_info")]
     public string Info { get; set; }
-    [Column("hasReward")]
+    [Column("hasreward")]
     public bool HasReward { get; set; }
     [Column("reward_info")]
     public string? RewardInfo { get; set; }

@@ -138,8 +138,8 @@ public class EmployeeController : ControllerBase
         }
     }
 
-    [HttpPost("SendNotification")]
-    public async Task<IActionResult> SendNotification([FromForm] string content)
+    [HttpPost("SendNotificationToAll")]
+    public async Task<IActionResult> SendNotificationToAll([FromForm] string content)
     {
         Notification notification = new()
         {
@@ -150,6 +150,37 @@ public class EmployeeController : ControllerBase
         try
         {
             var playerList = await Task.Run(() => _playerServices.GetPlayers());
+
+            foreach (var player in playerList)
+            {
+                notification.NotificationId = 1;
+                notification.PlayerId = player.Id;
+                await Task.Run(() => _notificationServices.CreateNotification(notification));
+            }
+
+            return Ok(new { success = true, message = "Notification sent successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error sending notification: {ex.Message}");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
+        }
+    }
+
+    [HttpPost("SendNotificationToSelected")]
+    public async Task<IActionResult> SendNotificationToAll([FromForm] string content, [FromForm] List<int> ids)
+    {
+        Notification notification = new()
+        {
+            Content = content,
+            IsRead = false,
+        };
+
+        try
+        {
+            var allPlayerList = await Task.Run(() => _playerServices.GetPlayers());
+
+            var playerList = allPlayerList.Where(p => ids.Contains(p.Id)).ToList();
 
             foreach (var player in playerList)
             {
@@ -230,7 +261,7 @@ public class EmployeeController : ControllerBase
             }
 
             String campaignString = campaignStringBuilder.ToString();
-            await SendNotification(campaignString);
+            await SendNotificationToAll(campaignString);
 
             return Ok(new { success = true, message = "Campaign announced successfully" });
         }
