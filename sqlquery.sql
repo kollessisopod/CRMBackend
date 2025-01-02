@@ -200,20 +200,20 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_top_10_games_by_avg_score()
 RETURNS TABLE (
-    game_name VARCHAR(20),
+    game_id int,
     avg_score NUMERIC
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        g.game_name,
+        g.game_id,
         AVG(pg.score) AS avg_score
     FROM 
         player_game pg
     JOIN 
         game g ON pg.g_ID = g.game_id
     GROUP BY 
-        g.game_name
+        g.game_id
     ORDER BY 
         avg_score DESC
     LIMIT 10;
@@ -223,20 +223,20 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_top_10_games_by_popularity()
 RETURNS TABLE (
-    game_name VARCHAR(20),
+    game_id int,
     popularity bigint
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        g.game_name,
+        g.game_id,
         COUNT(*) AS popularity
     FROM 
         player_game pg
     JOIN 
         game g ON pg.g_ID = g.game_id
     GROUP BY 
-        g.game_name
+        g.game_id
     ORDER BY 
         popularity DESC
     LIMIT 10;
@@ -501,7 +501,7 @@ VALUES
 
 --SELECT * FROM get_top_10_games_by_popularity();
 
-SELECT * FROM get_recommended_games_for_player(210);
+--SELECT * FROM get_recommended_games_for_player(210);
 
 --SELECT * FROM game;
 
