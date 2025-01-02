@@ -14,7 +14,6 @@ namespace CRMBackend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-
 public class PlayerController : ControllerBase
 {
     private readonly ILogger<PlayerController> _logger;
@@ -23,9 +22,7 @@ public class PlayerController : ControllerBase
     private readonly PlayerGameServices _playerGameServices;
     private readonly NotificationServices _notificationServices;
     private readonly GameServices _gameServices;
-    private readonly CampaignServices _campaignServices;  
-
-
+    private readonly CampaignServices _campaignServices;
     private readonly AppDbContext _context;
 
     public PlayerController(ILogger<PlayerController> logger,
@@ -47,7 +44,6 @@ public class PlayerController : ControllerBase
         _campaignServices = campaignServices;
     }
 
-
     [HttpPost("PlayerLogin")]
     public async Task<IActionResult> PlayerLogin([FromForm] string username, [FromForm] string password)
     {
@@ -56,15 +52,15 @@ public class PlayerController : ControllerBase
             var player = await Task.Run(() => _playerServices.GetPlayerByUsername(username));
             if (player == null || player.Password != password)
             {
-                return Unauthorized("Invalid username or password");
+                return Unauthorized(new { success = false, message = "Invalid username or password" });
             }
 
-            return Ok(new { player.Username, player.Id });
+            return Ok(new { success = true, player = new { player.Username, player.Id } });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error logging in: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -76,7 +72,7 @@ public class PlayerController : ControllerBase
             var player = await Task.Run(() => _playerServices.GetPlayerById(id));
             if (player == null)
             {
-                return NotFound("Player not found");
+                return NotFound(new { success = false, message = "Player not found" });
             }
 
             Feedback feedback = new()
@@ -89,17 +85,17 @@ public class PlayerController : ControllerBase
 
             if (_feedbackServices.CreateFeedback(feedback) != null)
             {
-                return Ok("Feedback inserted successfully");
-            } 
+                return Ok(new { success = true, message = "Feedback inserted successfully" });
+            }
             else
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, new { success = false, message = "Internal server error" });
             }
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error inserting feedback: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -109,12 +105,12 @@ public class PlayerController : ControllerBase
         try
         {
             var games = await Task.Run(() => _context.Games.ToList());
-            return Ok(games);
+            return Ok(new { success = true, games });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching games: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -126,22 +122,22 @@ public class PlayerController : ControllerBase
             var player = await Task.Run(() => _playerServices.GetPlayerById(id));
             if (player == null)
             {
-                return NotFound("Player not found");
+                return NotFound(new { success = false, message = "Player not found" });
             }
 
             var playedGames = await Task.Run(() => _playerGameServices.GetPlayerGamesByPlayerId(player.Id));
             if (playedGames == null)
             {
-                return NotFound("No games found");
+                return NotFound(new { success = false, message = "No games found" });
             }
             var gamesIds = playedGames.Select(pg => pg.GameId).ToList();
             var games = await Task.Run(() => _context.Games.Where(g => gamesIds.Contains(g.Id)).ToList());
-            return Ok(playedGames);
+            return Ok(new { success = true, playedGames });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching played games: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -153,31 +149,31 @@ public class PlayerController : ControllerBase
             var player = await Task.Run(() => _playerServices.GetPlayerById(id));
             if (player == null)
             {
-                return NotFound("Player not found");
+                return NotFound(new { success = false, message = "Player not found" });
             }
-            
+
             PlayerGame playerGame = new PlayerGame
             {
                 PlayerId = player.Id,
                 GameId = gameId,
                 Score = score
             };
-            
+
             int status = _playerGameServices.CreatePlayerGame(playerGame);
             _context.SaveChanges();
             if (status == 0)
             {
-                return Ok("Game rated successfully");
+                return Ok(new { success = true, message = "Game rated successfully" });
             }
             else
             {
-                return Ok("Game rate updated");
+                return Ok(new { success = true, message = "Game rate updated" });
             }
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error rating game: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -189,15 +185,15 @@ public class PlayerController : ControllerBase
             var player = await Task.Run(() => _playerGameServices.GetPlayerGameByPlayerAndGameId(id, gameId));
             if (player == null)
             {
-                return NotFound("Player not found");
+                return NotFound(new { success = false, message = "Player not found" });
             }
             _playerGameServices.DeletePlayerGame(id, gameId);
-            return Ok("Game score deleted successfully");
+            return Ok(new { success = true, message = "Game score deleted successfully" });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error deleting game score: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -209,15 +205,15 @@ public class PlayerController : ControllerBase
             var player = await Task.Run(() => _playerServices.GetPlayerById(id));
             if (player == null)
             {
-                return NotFound("Player not found");
+                return NotFound(new { success = false, message = "Player not found" });
             }
             var notifications = await Task.Run(() => _context.Notifications.Where(n => n.PlayerId == player.Id).ToList());
-            return Ok(notifications);
+            return Ok(new { success = true, notifications });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching notifications: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -229,35 +225,35 @@ public class PlayerController : ControllerBase
             var notification = await Task.Run(() => _notificationServices.GetNotificationById(notificationId));
             if (notification == null)
             {
-                return NotFound("Notification not found");
+                return NotFound(new { success = false, message = "Notification not found" });
             }
             await Task.Run(() => _notificationServices.MarkNotificationRead(notification));
-            return Ok("Notification marked as read");
+            return Ok(new { success = true, message = "Notification marked as read" });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error marking notification as read: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
     [HttpPost("DeleteNotification")]
-    public async Task<IActionResult> DeleteNotification([FromForm] int notificationId )
+    public async Task<IActionResult> DeleteNotification([FromForm] int notificationId)
     {
         try
         {
             var notification = await Task.Run(() => _notificationServices.GetNotificationById(notificationId));
             if (notification == null)
             {
-                return NotFound("Notification not found");
+                return NotFound(new { success = false, message = "Notification not found" });
             }
             await Task.Run(() => _notificationServices.DeleteNotification(notificationId));
-            return Ok("Notification deleted successfully");
+            return Ok(new { success = true, message = "Notification deleted successfully" });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error deleting notification: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -269,7 +265,7 @@ public class PlayerController : ControllerBase
             var player = await Task.Run(() => _playerServices.GetPlayerById(id));
             if (player == null)
             {
-                return NotFound("Player not found");
+                return NotFound(new { success = false, message = "Player not found" });
             }
 
             var recommendedGames = new List<Game>();
@@ -283,22 +279,18 @@ public class PlayerController : ControllerBase
 
             Console.WriteLine("GAMES>" + games);
 
-            foreach ( var g in games )
+            foreach (var g in games)
             {
                 Game game = _gameServices.GetGameById(g.RecommendedGameId);
                 recommendedGames.Add(game);
             }
 
-            return Ok(recommendedGames);
+            return Ok(new { success = true, recommendedGames });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching recommended games: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
-
-    
-
-
 }

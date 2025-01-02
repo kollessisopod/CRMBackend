@@ -5,6 +5,5 @@ namespace CRMBackend.Dtos;
 public class PositivityGameDto
 {
     public int GameId { get; set; }
-    [NotMapped]
-    public decimal AvgScore { get; set; }  
+    public decimal AvgScore { get; set; }
 }

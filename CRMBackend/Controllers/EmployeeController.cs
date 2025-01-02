@@ -1,15 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using CRMBackend.Dtos;
 using CRMBackend.Entities;
 using CRMBackend.Services;
-using System.Data;
-using System.Data.SqlClient;
+using CRMBackend;
+using Microsoft.AspNetCore.Mvc;
 using System.Text;
-using System.Runtime.CompilerServices;
-using CRMBackend.Dtos;
-using Npgsql;
-
-namespace CRMBackend.Controllers;
+using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("[controller]")]
@@ -43,7 +38,6 @@ public class EmployeeController : ControllerBase
         _campaignServices = campaignServices;
     }
 
-
     [HttpPost("EmployeeLogin")]
     public async Task<IActionResult> EmployeeLogin([FromForm] int id, [FromForm] string password)
     {
@@ -52,15 +46,15 @@ public class EmployeeController : ControllerBase
             var employee = await Task.Run(() => _employeeServices.GetEmployeeById(id));
             if (employee == null || employee.Password != password)
             {
-                return Unauthorized("Invalid username or password");
+                return Unauthorized(new { success = false, message = "Invalid username or password" });
             }
 
-            return Ok(new { employee.Username, employee.Id });
+            return Ok(new { success = true, message = "Login successful", employee.Username, employee.Id });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error logging in: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -70,12 +64,12 @@ public class EmployeeController : ControllerBase
         try
         {
             var employees = await Task.Run(() => _employeeServices.GetEmployees());
-            return Ok(employees);
+            return Ok(new { success = true, employees });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching employees: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -85,12 +79,12 @@ public class EmployeeController : ControllerBase
         try
         {
             var feedbacks = await Task.Run(() => _feedbackServices.GetFeedbacks());
-            return Ok(feedbacks);
+            return Ok(new { success = true, feedbacks });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching feedbacks: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -100,12 +94,12 @@ public class EmployeeController : ControllerBase
         try
         {
             var players = await Task.Run(() => _playerServices.GetPlayers());
-            return Ok(players);
+            return Ok(new { success = true, players });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching players: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -115,12 +109,12 @@ public class EmployeeController : ControllerBase
         try
         {
             var campaigns = await Task.Run(() => _campaignServices.GetCampaigns());
-            return Ok(campaigns);
+            return Ok(new { success = true, campaigns });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching campaigns: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -135,12 +129,12 @@ public class EmployeeController : ControllerBase
         try
         {
             await Task.Run(() => _gameServices.CreateGame(game));
-            return Ok("Game created successfully");
+            return Ok(new { success = true, message = "Game created successfully" });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error creating game: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -164,12 +158,12 @@ public class EmployeeController : ControllerBase
                 await Task.Run(() => _notificationServices.CreateNotification(notification));
             }
 
-            return Ok("Notifications sent successfully");
+            return Ok(new { success = true, message = "Notification sent successfully" });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error sending notification: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -185,12 +179,12 @@ public class EmployeeController : ControllerBase
                 RewardInfo = rewardInfo
             };
             await Task.Run(() => _campaignServices.CreateCampaign(campaign));
-            return Ok("Campaign created successfully");
+            return Ok(new { success = true, message = "Campaign created successfully" });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error creating campaign: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -202,15 +196,15 @@ public class EmployeeController : ControllerBase
             var campaign = await Task.Run(() => _campaignServices.GetCampaignById(campaignId));
             if (campaign == null)
             {
-                return NotFound("Campaign not found");
+                return NotFound(new { success = false, message = "Campaign not found" });
             }
             await Task.Run(() => _campaignServices.DeleteCampaign(campaignId));
-            return Ok("Campaign deleted successfully");
+            return Ok(new { success = true, message = "Campaign deleted successfully" });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error deleting campaign: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -222,7 +216,7 @@ public class EmployeeController : ControllerBase
             var campaign = await Task.Run(() => _campaignServices.GetCampaignById(campaignId));
             if (campaign == null)
             {
-                return NotFound("Campaign not found");
+                return NotFound(new { success = false, message = "Campaign not found" });
             }
 
             StringBuilder campaignStringBuilder = new StringBuilder()
@@ -238,12 +232,12 @@ public class EmployeeController : ControllerBase
             String campaignString = campaignStringBuilder.ToString();
             await SendNotification(campaignString);
 
-            return Ok("Campaign announced successfully");
+            return Ok(new { success = true, message = "Campaign announced successfully" });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error announcing campaign: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -252,26 +246,28 @@ public class EmployeeController : ControllerBase
     {
         try
         {
-            var gamesList = new List<(Game Game, decimal PositivityScore)>();
+            var query = "SELECT game_id AS GameId, avg_score AS AvgScore FROM get_top_10_games_by_avg_score();";
 
-            var query = "SELECT * FROM get_top_10_games_by_avg_score();";
-            var games = await _context.Database
-                                      .SqlQueryRaw<PositivityGameDto>(query)
-                                      .AsNoTracking()
-                                      .ToListAsync();
+            var results = await _context.Database
+                .SqlQueryRaw<PositivityGameDto>(query)
+                .AsNoTracking()
+                .ToListAsync();
 
-            foreach (var g in games)
-            {
-                Game game = _gameServices.GetGameById(g.GameId);
-                gamesList.Add((game, g.AvgScore));
-            }
+            var gamesList = await Task.WhenAll(results.Select(async r => {
+                var game = _gameServices.GetGameById(r.GameId);
+                return new
+                {
+                    Game = game,
+                    PositivityScore = r.AvgScore
+                };
+            }));
 
-            return Ok(gamesList);
+            return Ok(new { success = true, gamesList });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching recommended games: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -280,29 +276,49 @@ public class EmployeeController : ControllerBase
     {
         try
         {
-            var gamesList = new List<(Game Game, long PopularityScore)>();
+            var query = "SELECT game_id AS GameId, popularity AS Popularity FROM get_top_10_games_by_popularity();";
 
-            var query = "SELECT * FROM get_top_10_games_by_popularity();";
-            var games = await _context.Database
-                                      .SqlQueryRaw<PopularityGameDto>(query)
-                                      .AsNoTracking()
-                                      .ToListAsync();
+            var results = await _context.Database
+                .SqlQueryRaw<PopularityGameDto>(query)
+                .AsNoTracking()
+                .ToListAsync();
 
-            foreach (var g in games)
-            {
-                Game game = _gameServices.GetGameById(g.GameId);
-                gamesList.Add((game, g.Popularity));
-            }
+            var gamesList = await Task.WhenAll(results.Select(async r => {
+                var game = _gameServices.GetGameById(r.GameId);
+                return new
+                {
+                    Game = game,
+                    PopularityScore = r.Popularity
+                };
+            }));
 
-            return Ok(gamesList);
+            return Ok(new { success = true, gamesList });
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching recommended games: {ex.Message}");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
+    [HttpGet("GetFeedbackTypePercentages")]
+    public async Task<IActionResult> GetFeedbackTypePercentages()
+    {
+        try
+        {
+            var query = "SELECT f_type AS FType, f_percentage AS FPercentage FROM get_feedback_type_percentage_last_month();";
+
+            var results = await _context.Database
+                .SqlQueryRaw<FeedbackTypePercentageDto>(query)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return Ok(new { success = true, feedbackTypes = results });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching feedback type percentages: {ex.Message}");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
+        }
+    }
 }
-
-
