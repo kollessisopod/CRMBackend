@@ -23,6 +23,7 @@ public class EmployeeServices
     }
     public Employee CreateEmployee(Employee employee)
     {
+        employee.Id = 1;
         _context.Employees.Add(employee);
         _context.SaveChanges();
         return employee;

@@ -89,7 +89,7 @@ public class PlayerController : ControllerBase
 
             if (_feedbackServices.CreateFeedback(feedback) != null)
             {
-                return Ok("Feedback inserted successfully");
+                return Ok(new { success = true, message = "Feedback inserted successfully" });
             }
             else
             {
@@ -114,6 +114,53 @@ public class PlayerController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching games: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("GetPlayerGameByPlayerAndGameId")]
+    public async Task<IActionResult> GetPlayerGameByPlayerAndGameId([FromForm] int playerId, [FromForm] int gameId)
+    {
+        try
+        {
+            
+            var playerGame = await Task.Run(() => _playerGameServices.GetPlayerGameByPlayerAndGameId(playerId, gameId));
+
+            return Ok(playerGame);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching game: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("CreatePlayer")]
+    public async Task<IActionResult> CreatePlayer([FromForm] string username, [FromForm] string password, [FromForm] string email, [FromForm] string phoneNumber)
+    {
+        try
+        {
+            var player = new Player
+            {
+                Username = username,
+                Password = password,
+                Email = email,
+                PhoneNumber = phoneNumber,
+                LastOnline = DateTime.Now
+
+            };
+            var existingPlayer = await Task.Run(() => _playerServices.GetPlayerByUsername(username));
+            if (existingPlayer != null)
+            {
+                return BadRequest("Username already exists");
+            }
+            _playerServices.CreatePlayer(player);
+            _context.SaveChanges();
+            return Ok("Player created successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error creating player: {ex.Message}");
             return StatusCode(500, "Internal server error");
         }
     }
