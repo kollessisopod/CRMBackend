@@ -206,7 +206,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("SubmitGameScore")]
-    public async Task<IActionResult> RateGame([FromForm] int id, [FromForm] int gameId, [FromForm] int score)
+    public async Task<IActionResult> SubmitGameScore([FromForm] int id, [FromForm] int gameId, [FromForm] int score)
     {
         try
         {
@@ -227,11 +227,11 @@ public class PlayerController : ControllerBase
             _context.SaveChanges();
             if (status == 0)
             {
-                return Ok("Game rated successfully");
+                return Ok(new { success = true, message = "Created" });
             }
             else
             {
-                return Ok("Game rate updated");
+                return Ok(new { success = true, message = "Updated" });
             }
         }
         catch (Exception ex)
