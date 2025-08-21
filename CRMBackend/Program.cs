@@ -14,9 +14,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 //Postgres config
+var connectionString = builder.Configuration.GetConnectionString("PostgresConnection")
+                        ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
+    options.UseNpgsql(connectionString));
+
 
 builder.Services.AddScoped<EmployeeServices>();
 builder.Services.AddScoped<PlayerServices>();
