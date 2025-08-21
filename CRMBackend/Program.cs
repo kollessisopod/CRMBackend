@@ -81,8 +81,6 @@ app.Use(async (context, next) =>
 
 app.UseCors("AllowAllOrigins");
 
-app.UseHttpsRedirection();
-
 app.UseAuthentication();
 
 app.UseAuthorization();
