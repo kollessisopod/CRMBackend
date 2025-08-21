@@ -16,11 +16,26 @@ builder.Services.AddSwaggerGen();
 
 
 //Postgres config
-var connectionString = builder.Configuration.GetConnectionString("PostgresConnection")
-                        ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
-
+#region Database connection check
+using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.OpenConnection(); // Try opening connection
+        db.Database.CloseConnection();
+        logger.LogInformation("PostgreSQL connection successful!");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "PostgreSQL connection failed!");
+    }
+}
+#endregion
 
 builder.Services.AddScoped<EmployeeServices>();
 builder.Services.AddScoped<PlayerServices>();

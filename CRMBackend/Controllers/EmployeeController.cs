@@ -24,6 +24,7 @@ public class EmployeeController : ControllerBase
     private readonly CampaignServices _campaignServices;
     private readonly AppDbContext _context;
 
+
     public EmployeeController(ILogger<EmployeeController> logger,
         AppDbContext context,
         EmployeeServices employeeServices,
@@ -41,6 +42,7 @@ public class EmployeeController : ControllerBase
         _notificationServices = notificationServices;
         _gameServices = gameServices;
         _campaignServices = campaignServices;
+
     }
 
 
@@ -69,6 +71,7 @@ public class EmployeeController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("GetEmployees called");
             var employees = await Task.Run(() => _employeeServices.GetEmployees());
             return Ok(employees);
         }
