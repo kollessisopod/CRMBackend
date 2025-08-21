@@ -73,6 +73,7 @@ public class EmployeeController : ControllerBase
         {
             _logger.LogInformation("GetEmployees called");
             var employees = await Task.Run(() => _employeeServices.GetEmployees());
+            _logger.LogInformation("returning object:" + employees);
             return Ok(employees);
         }
         catch (Exception ex)
