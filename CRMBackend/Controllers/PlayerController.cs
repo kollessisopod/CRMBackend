@@ -13,6 +13,7 @@ using CRMBackend.Dtos;
 namespace CRMBackend.Controllers;
 
 [ApiController]
+[AllowAnonymous]
 [Route("[controller]")]
 
 public class PlayerController : ControllerBase

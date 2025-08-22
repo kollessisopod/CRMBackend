@@ -8,9 +8,11 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using CRMBackend.Dtos;
 using Npgsql;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CRMBackend.Controllers;
 
+[AllowAnonymous]
 [ApiController]
 [Route("[controller]")]
 public class EmployeeController : ControllerBase
