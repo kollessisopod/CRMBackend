@@ -12,6 +12,7 @@ using CRMBackend.Dtos;
 
 namespace CRMBackend.Controllers;
 
+[AllowAnonymous]
 [ApiController]
 [Route("[controller]")]
 
